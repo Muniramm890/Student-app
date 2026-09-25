@@ -118,11 +118,11 @@ export const AppShell = () => {
             maxWidth: 1120, margin: "0 auto", width: "100%",
             display: "flex", alignItems: "center", justifyContent: "space-between",
           }}>
-            <div className="hide-desktop"><Brand compact /></div>
+         <div className="hide-desktop" style={{ minWidth: 0, overflow: "hidden", flex: "1 1 auto" }}><Brand compact /></div>
             <div className="hide-mobile" style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18 }}>
               {pageTitle}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: "auto" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: "auto", flexShrink: 0 }}>
               <span className="hide-mobile" style={{ fontSize: 13.5, color: "var(--text-muted)" }}>
                 Hi, {student?.first_name || "Student"}
               </span>
