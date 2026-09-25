@@ -1,7 +1,7 @@
 // FILE: student-app/src/components/layout/AppShell.tsx
 
 import { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Icon } from "../ui/Icon";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useAuth } from "../../contexts/AuthContext";
@@ -14,11 +14,22 @@ const NAV = [
   { to: "/profile", label: "Profile", icon: "profile" as const },
 ];
 
+// Desktop header title per route — Home shows the school name instead of "Home".
+const PAGE_TITLES: Record<string, string> = {
+  "/attendance": "Attendance",
+  "/fees": "Fees",
+  "/results": "Results",
+  "/profile": "Profile",
+  "/notifications": "Notifications",
+};
+
 const SIDEBAR_KEY = "student_sidebar_collapsed";
 
 export const AppShell = () => {
   const { mode, toggle } = useTheme();
   const { student } = useAuth();
+  const location = useLocation();
+  const pageTitle = location.pathname === "/" ? (student?.school_name || "Dashboard") : (PAGE_TITLES[location.pathname] || "School Office");
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDEBAR_KEY) === "1");
 
   const toggleCollapsed = () => {
@@ -38,8 +49,8 @@ export const AppShell = () => {
         position: "sticky", top: 0, height: "100dvh", overflow: "hidden",
         transition: "width 0.22s var(--ease), padding 0.22s var(--ease)",
       }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "space-between" }}>
-          <Brand collapsed={collapsed} />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Brand logoOnly />
         </div>
         <div style={{ height: 28 }} />
         {NAV.map((item) => (
@@ -69,6 +80,9 @@ export const AppShell = () => {
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
           <div className="hide-desktop"><Brand compact /></div>
+          <div className="hide-mobile" style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18 }}>
+            {pageTitle}
+          </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: "auto" }}>
             <span className="hide-mobile" style={{ fontSize: 13.5, color: "var(--text-muted)" }}>
               Hi, {student?.first_name || "Student"}
@@ -116,7 +130,7 @@ export const AppShell = () => {
   );
 };
 
-const Brand = ({ compact = false, collapsed = false }: { compact?: boolean; collapsed?: boolean }) => {
+const Brand = ({ compact = false, logoOnly = false }: { compact?: boolean; logoOnly?: boolean }) => {
   const { student } = useAuth();
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, overflow: "hidden", minWidth: 0 }}>
@@ -129,7 +143,7 @@ const Brand = ({ compact = false, collapsed = false }: { compact?: boolean; coll
           fontFamily: "var(--font-display)", fontWeight: 700, fontSize: compact ? 12 : 14,
         }}>SO</div>
       )}
-      {!collapsed && (
+      {!logoOnly && (
         <div style={{
           fontFamily: "var(--font-display)", fontWeight: 700, fontSize: compact ? 15 : 16, lineHeight: 1.1,
           whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
