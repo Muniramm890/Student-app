@@ -87,6 +87,7 @@ export const StudentApi = {
   },
 
   feeAccount: () => apiRequest("/student/fees/me"),
+  homework: () => apiRequest("/homework/mine"),
   receipt: (paymentId: string) => apiRequest(`/student/fees/me/receipt/${paymentId}`),
 
   examGroups: () => apiRequest("/student/results/exam-groups"),
