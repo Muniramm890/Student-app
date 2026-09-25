@@ -107,30 +107,34 @@ export const AppShell = () => {
 
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
         {/* Top bar */}
-        <header style={{
+                <header style={{
           position: "sticky", top: 0, zIndex: 40,
           background: "color-mix(in srgb, var(--bg) 88%, transparent)",
           backdropFilter: "blur(10px)",
           borderBottom: "1px solid var(--border-soft)",
           padding: "calc(12px + var(--sat)) 16px 12px",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <div className="hide-desktop"><Brand compact /></div>
-          <div className="hide-mobile" style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18 }}>
-            {pageTitle}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: "auto" }}>
-            <span className="hide-mobile" style={{ fontSize: 13.5, color: "var(--text-muted)" }}>
-              Hi, {student?.first_name || "Student"}
-            </span>
-            <NavLink to="/notifications" style={{
-              width: 38, height: 38, borderRadius: 12, background: "var(--surface-alt)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <Icon name="bell" size={18} />
-            </NavLink>
-            <div className="hide-desktop"><ThemeToggle mode={mode} toggle={toggle} /></div>
-            <Avatar url={student?.photo_url} name={student?.first_name} />
+          <div style={{
+            maxWidth: 1120, margin: "0 auto", width: "100%",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}>
+            <div className="hide-desktop"><Brand compact /></div>
+            <div className="hide-mobile" style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18 }}>
+              {pageTitle}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: "auto" }}>
+              <span className="hide-mobile" style={{ fontSize: 13.5, color: "var(--text-muted)" }}>
+                Hi, {student?.first_name || "Student"}
+              </span>
+              <NavLink to="/notifications" style={{
+                width: 38, height: 38, borderRadius: 12, background: "var(--surface-alt)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <Icon name="bell" size={18} />
+              </NavLink>
+              <div className="hide-desktop"><ThemeToggle mode={mode} toggle={toggle} /></div>
+              <Avatar url={student?.photo_url} name={student?.first_name} />
+            </div>
           </div>
         </header>
 
