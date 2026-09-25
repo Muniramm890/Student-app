@@ -52,11 +52,12 @@ export const Dashboard = () => {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 24 }}>
-            <QuickAction to="/fees" icon="card" label="Pay Fees" />
-            <QuickAction to="/results" icon="result" label="Results" />
-            <QuickAction to="/attendance" icon="calendar" label="Attendance" />
-            <QuickAction to="/notifications" icon="bell" label="Notices" badge={data.unreadNotifications} />
-          </div>
+  <QuickAction to="/homework" icon="book" label="Homework" />   {/* ← add this */}
+  <QuickAction to="/fees" icon="card" label="Pay Fees" />
+  <QuickAction to="/results" icon="result" label="Results" />
+  <QuickAction to="/attendance" icon="calendar" label="Attendance" />
+  <QuickAction to="/notifications" icon="bell" label="Notices" badge={data.unreadNotifications} />
+</div>
 
           <h2 style={{ fontSize: 17, marginBottom: 12 }}>Today's classes</h2>
           {data.todayClasses.length === 0 ? (
