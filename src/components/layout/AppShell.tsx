@@ -1,6 +1,6 @@
 // FILE: student-app/src/components/layout/AppShell.tsx
 
-import React from "react";
+import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { Icon } from "../ui/Icon";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -14,25 +14,48 @@ const NAV = [
   { to: "/profile", label: "Profile", icon: "profile" as const },
 ];
 
+const SIDEBAR_KEY = "student_sidebar_collapsed";
+
 export const AppShell = () => {
   const { mode, toggle } = useTheme();
   const { student } = useAuth();
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDEBAR_KEY) === "1");
+
+  const toggleCollapsed = () => {
+    setCollapsed((c) => {
+      const next = !c;
+      localStorage.setItem(SIDEBAR_KEY, next ? "1" : "0");
+      return next;
+    });
+  };
 
   return (
     <div className="app-shell">
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar — collapsible to icon-only, same pattern as the admin console */}
       <aside className="hide-mobile" style={{
-        width: 248, flexShrink: 0, borderRight: "1px solid var(--border)",
-        padding: "28px 18px", display: "flex", flexDirection: "column", gap: 4,
-        position: "sticky", top: 0, height: "100dvh",
+        width: collapsed ? 76 : 248, flexShrink: 0, borderRight: "1px solid var(--border)",
+        padding: collapsed ? "28px 12px" : "28px 18px", display: "flex", flexDirection: "column", gap: 4,
+        position: "sticky", top: 0, height: "100dvh", overflow: "hidden",
+        transition: "width 0.22s var(--ease), padding 0.22s var(--ease)",
       }}>
-        <Brand />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "space-between" }}>
+          <Brand collapsed={collapsed} />
+        </div>
         <div style={{ height: 28 }} />
         {NAV.map((item) => (
-          <SideLink key={item.to} {...item} />
+          <SideLink key={item.to} {...item} collapsed={collapsed} />
         ))}
         <div style={{ flex: 1 }} />
-        <ThemeToggle mode={mode} toggle={toggle} full />
+        <button
+          onClick={toggleCollapsed}
+          className="btn btn-ghost"
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          style={{ width: "100%", justifyContent: collapsed ? "center" : "flex-start", marginBottom: 4 }}
+        >
+          <Icon name="menu" size={17} />
+          {!collapsed && <span style={{ marginLeft: 8, fontSize: 13 }}>Collapse</span>}
+        </button>
+        <ThemeToggle mode={mode} toggle={toggle} full={!collapsed} />
       </aside>
 
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
@@ -93,35 +116,41 @@ export const AppShell = () => {
   );
 };
 
-const Brand = ({ compact = false }: { compact?: boolean }) => {
+const Brand = ({ compact = false, collapsed = false }: { compact?: boolean; collapsed?: boolean }) => {
   const { student } = useAuth();
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, overflow: "hidden", minWidth: 0 }}>
       {student?.logo_url ? (
-        <img src={student.logo_url} alt="" style={{ width: compact ? 30 : 36, height: compact ? 30 : 36, borderRadius: 9, objectFit: "contain", background: "#fff" }} />
+        <img src={student.logo_url} alt="" style={{ width: compact ? 30 : 36, height: compact ? 30 : 36, borderRadius: 9, objectFit: "contain", background: "#fff", flexShrink: 0 }} />
       ) : (
         <div style={{
           width: compact ? 30 : 36, height: compact ? 30 : 36, borderRadius: 9, background: "var(--brand)",
-          display: "flex", alignItems: "center", justifyContent: "center", color: "#fff",
+          display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0,
           fontFamily: "var(--font-display)", fontWeight: 700, fontSize: compact ? 12 : 14,
         }}>SO</div>
       )}
-      <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: compact ? 15 : 16, lineHeight: 1.1 }}>
-        {student?.school_name || "School Office"}
-      </div>
+      {!collapsed && (
+        <div style={{
+          fontFamily: "var(--font-display)", fontWeight: 700, fontSize: compact ? 15 : 16, lineHeight: 1.1,
+          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+        }}>
+          {student?.school_name || "School Office"}
+        </div>
+      )}
     </div>
   );
 };
 
-const SideLink = ({ to, label, icon, end }: { to: string; label: string; icon: any; end?: boolean }) => (
-  <NavLink to={to} end={end} style={({ isActive }) => ({
-    display: "flex", alignItems: "center", gap: 12, padding: "11px 12px", borderRadius: 12,
+const SideLink = ({ to, label, icon, end, collapsed }: { to: string; label: string; icon: any; end?: boolean; collapsed?: boolean }) => (
+  <NavLink to={to} end={end} title={collapsed ? label : ""} style={({ isActive }) => ({
+    display: "flex", alignItems: "center", gap: 12, padding: collapsed ? "11px" : "11px 12px",
+    justifyContent: collapsed ? "center" : "flex-start", borderRadius: 12,
     color: isActive ? "#fff" : "var(--text-muted)",
     background: isActive ? "var(--brand)" : "transparent",
     fontWeight: 600, fontSize: 14, transition: "background 0.15s var(--ease)",
   })}>
     <Icon name={icon} size={19} />
-    {label}
+    {!collapsed && label}
   </NavLink>
 );
 
