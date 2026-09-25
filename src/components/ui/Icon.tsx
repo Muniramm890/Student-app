@@ -3,6 +3,7 @@
 import React from "react";
 
 const PATHS: Record<string, string> = {
+  menu: "M3 6h18M3 12h18M3 18h18",
   home: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z",
   attendance: "M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11",
   fee: "M6 3h12M6 8h12M6 13l8.5 8M6 13h3a4 4 0 000-8",
