@@ -6,6 +6,7 @@ import { useToast } from "../contexts/ToastContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { StudentApi } from "../api/client";
 import { Icon } from "../components/ui/Icon";
+import { BrandMark } from "../components/ui/BrandMark";
 
 export const Login = () => {
   const { login } = useAuth();
@@ -35,31 +36,42 @@ export const Login = () => {
 
   return (
     <div style={{
-      minHeight: "100dvh", display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center", padding: "24px 20px", position: "relative",
+      minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center",
+      padding: 20, position: "relative", background: "var(--bg)", overflow: "hidden",
     }}>
-      <button onClick={toggle} className="btn btn-ghost" style={{ position: "absolute", top: "calc(20px + var(--sat))", right: 20, width: 38, height: 38, padding: 0, borderRadius: "50%" }}>
+      {/* Background glow — same as admin login */}
+      <div style={{
+        position: "fixed", top: -100, right: -100, width: 400, height: 400, borderRadius: "50%",
+        background: "rgba(var(--brand-rgb), 0.08)", pointerEvents: "none", filter: "blur(60px)",
+      }} />
+
+      <button onClick={toggle} className="btn btn-ghost" style={{
+        position: "fixed", top: "calc(20px + var(--sat))", right: 20, width: 38, height: 38,
+        padding: 0, borderRadius: "50%", zIndex: 20,
+      }}>
         <Icon name={mode === "dark" ? "sun" : "moon"} size={16} />
       </button>
 
-      <div className="enter" style={{ width: "100%", maxWidth: 380 }}>
-        <div style={{
-          width: 60, height: 60, borderRadius: 18, background: "var(--brand)",
-          display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 22,
-          fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 24, color: "#fff",
-          boxShadow: "0 12px 30px rgba(var(--brand-rgb), 0.35)",
-        }}>SO</div>
-
-        <h1 style={{ fontSize: 28, marginBottom: 6 }}>{forgot ? "Reset password" : "Welcome back"}</h1>
-        <p style={{ color: "var(--text-muted)", fontSize: 14.5, marginBottom: 28 }}>
-          {forgot ? "We'll send an OTP to your registered phone." : "Sign in to your student account."}
-        </p>
+      <div className="enter" style={{
+        width: "100%", maxWidth: 420, background: "var(--surface)", border: "1px solid var(--border)",
+        borderRadius: 24, padding: 36, boxShadow: "0 25px 60px var(--shadow)", position: "relative", zIndex: 10,
+      }}>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <div style={{ marginBottom: 16 }}><BrandMark size={78} /></div>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 26, fontWeight: 900, margin: 0, letterSpacing: "0.5px" }}>
+            <span style={{ color: "var(--text)" }}>School</span>
+            <span style={{ color: "var(--brand)" }}>Office</span>
+          </h1>
+          <p style={{ color: "var(--text-muted)", fontSize: 13, marginTop: 6, marginBottom: 0, fontWeight: 500, letterSpacing: "0.5px" }}>
+            Student Portal
+          </p>
+        </div>
 
         {forgot ? (
           <ForgotPasswordFlow onDone={() => setForgot(false)} />
         ) : (
           <form onSubmit={submit}>
-            <Field label="Phone or email">
+            <Field label="Phone or Email">
               <input
                 className="input" value={identifier} onChange={(e) => setIdentifier(e.target.value)}
                 placeholder="9876543210 or name@email.com" autoComplete="username"
@@ -69,34 +81,62 @@ export const Login = () => {
               <div style={{ position: "relative" }}>
                 <input
                   className="input" type={showPw ? "text" : "password"} value={password}
-                  onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password"
-                  style={{ paddingRight: 42 }}
+                  onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" autoComplete="current-password"
+                  style={{ paddingRight: 44 }}
                 />
                 <button type="button" onClick={() => setShowPw((s) => !s)}
-                  style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "var(--text-faint)" }}>
-                  <Icon name={showPw ? "eyeOff" : "eye"} size={18} />
+                  style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "var(--text-faint)", padding: 0 }}>
+                  <Icon name={showPw ? "eyeOff" : "eye"} size={16} />
+                </button>
+              </div>
+              <div style={{ textAlign: "right", marginTop: 8 }}>
+                <button type="button" onClick={() => setForgot(true)} style={{
+                  background: "none", border: "none", color: "var(--brand)", fontSize: 12, fontWeight: 700, cursor: "pointer", padding: 0,
+                }}>
+                  Forgot Password?
                 </button>
               </div>
             </Field>
 
-            {error && <p style={{ color: "var(--danger)", fontSize: 13.5, marginBottom: 14 }}>{error}</p>}
+            {error && (
+              <div style={{
+                background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8,
+                padding: "10px 14px", marginBottom: 16, color: "var(--danger)", fontSize: 13, fontWeight: 500,
+              }}>
+                ⚠ {error}
+              </div>
+            )}
 
-            <button className="btn btn-primary" type="submit" disabled={busy} style={{ width: "100%", padding: "14px", fontSize: 15 }}>
-              {busy ? "Signing in…" : "Sign in"}
-            </button>
-
-            <button type="button" onClick={() => setForgot(true)}
-              style={{ background: "none", border: "none", color: "var(--brand)", fontSize: 13.5, fontWeight: 600, marginTop: 18, width: "100%" }}>
-              Forgot password?
+            <button className="btn btn-primary" type="submit" disabled={busy} style={{ width: "100%", padding: "12px 20px", fontSize: 14 }}>
+              {busy ? "⏳ Signing in…" : "→ Sign In"}
             </button>
           </form>
         )}
       </div>
 
+      {/* Powered By footer — same as admin login */}
+      <div style={{ position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)", zIndex: 5, opacity: 0.85 }}>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 10, padding: "10px 18px", borderRadius: 14,
+          background: "var(--overlay)", border: "1px solid var(--border-soft)", backdropFilter: "blur(6px)",
+        }}>
+          <BrandMark size={26} />
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: 12, letterSpacing: "-0.01em", lineHeight: 1 }}>
+              <span style={{ color: "var(--text)" }}>School</span>
+              <span style={{ color: "var(--brand)" }}>Office</span>
+            </div>
+            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 9, color: "var(--text-muted)", marginTop: 2 }}>
+              Smart ERP for Smart Schools
+            </div>
+          </div>
+        </div>
+      </div>
+
       <style>{`
         .input {
-          width: 100%; padding: 13px 14px; border-radius: 12px; border: 1.5px solid var(--border);
-          background: var(--surface); color: var(--text); font-size: 14.5px; outline: none;
+          width: 100%; padding: 11px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+          background: var(--surface-alt); color: var(--text); font-size: 14px; outline: none;
           transition: border-color 0.15s var(--ease);
         }
         .input:focus { border-color: var(--brand); }
@@ -107,7 +147,7 @@ export const Login = () => {
 
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div style={{ marginBottom: 16 }}>
-    <label style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: "var(--text-muted)", marginBottom: 6 }}>{label}</label>
+    <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-muted)", marginBottom: 6, textTransform: "uppercase" }}>{label}</label>
     {children}
   </div>
 );
