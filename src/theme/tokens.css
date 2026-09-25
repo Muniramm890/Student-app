@@ -1,0 +1,91 @@
+/* FILE: student-app/src/theme/tokens.css */
+
+/* ═══════════════════════════════════════════════════════════════
+   DESIGN TOKENS — School Office Student App
+   Brand accent stays constant across modes; surfaces/text swap.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  color-scheme: dark;
+
+  /* Brand — same identity as the admin console */
+  --brand: #E8600A;
+  --brand-light: #FFF3EC;
+  --brand-dark: #B84800;
+  --brand-rgb: 232, 96, 10;
+
+  /* Semantic */
+  --success: #22C55E;
+  --danger: #EF4444;
+  --warning: #F59E0B;
+  --info: #3B82F6;
+
+  /* Radii / motion */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Type */
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+
+  /* Safe areas */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Dark (default) ─────────────────────────────────────────── */
+:root,
+:root[data-theme="dark"] {
+  --bg: #0B0D14;
+  --bg-elevated: #12141F;
+  --surface: #171A27;
+  --surface-alt: #1E2233;
+  --surface-hover: #262B40;
+  --border: #262B40;
+  --border-soft: #1E2233;
+  --text: #F1F3FA;
+  --text-muted: #8B92B8;
+  --text-faint: #5B6284;
+  --shadow: rgba(0, 0, 0, 0.45);
+  --overlay: rgba(6, 7, 12, 0.72);
+}
+
+/* ── Light ───────────────────────────────────────────────────── */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #F7F7FB;
+  --bg-elevated: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-alt: #F1F1F8;
+  --surface-hover: #E9E9F4;
+  --border: #E4E4F0;
+  --border-soft: #ECECF6;
+  --text: #14151F;
+  --text-muted: #676C8A;
+  --text-faint: #9498B3;
+  --shadow: rgba(20, 21, 31, 0.10);
+  --overlay: rgba(20, 21, 31, 0.45);
+}
+
+/* Respect system preference only before the user picks explicitly —
+   ThemeContext writes data-theme once a choice (or first load) is made,
+   so this media query is effectively the first-paint fallback only. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+    --bg: #F7F7FB;
+    --bg-elevated: #FFFFFF;
+    --surface: #FFFFFF;
+    --surface-alt: #F1F1F8;
+    --surface-hover: #E9E9F4;
+    --border: #E4E4F0;
+    --border-soft: #ECECF6;
+    --text: #14151F;
+    --text-muted: #676C8A;
+    --text-faint: #9498B3;
+    --shadow: rgba(20, 21, 31, 0.10);
+    --overlay: rgba(20, 21, 31, 0.45);
+  }
+}
