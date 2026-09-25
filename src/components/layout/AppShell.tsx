@@ -11,6 +11,7 @@ const NAV = [
   { to: "/attendance", label: "Attendance", icon: "attendance" as const },
   { to: "/fees", label: "Fees", icon: "fee" as const },
   { to: "/results", label: "Results", icon: "result" as const },
+  { to: "/homework", label: "Homework", icon: "book" as const },   // ← add this
   { to: "/profile", label: "Profile", icon: "profile" as const },
 ];
 
@@ -20,6 +21,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/fees": "Fees",
   "/results": "Results",
   "/profile": "Profile",
+  "/homework": "Homework",
   "/notifications": "Notifications",
 };
 
