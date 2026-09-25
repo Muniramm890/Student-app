@@ -3,16 +3,50 @@
 import { useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Icon } from "../ui/Icon";
+import { Modal } from "../ui/Modal";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useAuth } from "../../contexts/AuthContext";
 
+// Desktop sidebar — unconstrained, lists everything, keeps growing as modules are added.
 const NAV = [
   { to: "/", label: "Home", icon: "home" as const, end: true },
   { to: "/attendance", label: "Attendance", icon: "attendance" as const },
+  { to: "/homework", label: "Homework", icon: "book" as const },
   { to: "/fees", label: "Fees", icon: "fee" as const },
   { to: "/results", label: "Results", icon: "result" as const },
-  { to: "/homework", label: "Homework", icon: "book" as const },   // ← add this
   { to: "/profile", label: "Profile", icon: "profile" as const },
+];
+
+// Mobile bottom nav — fixed at 4 high-frequency items + a "Menu" slot. Do not add a 5th
+// route icon here; every new module goes into MENU_GROUPS below instead.
+const MOBILE_NAV = [
+  { to: "/", label: "Home", icon: "home" as const, end: true },
+  { to: "/attendance", label: "Attendance", icon: "attendance" as const },
+  { to: "/homework", label: "Homework", icon: "book" as const },
+  { to: "/fees", label: "Fees", icon: "fee" as const },
+];
+
+// Everything else lives in the "More" sheet, grouped by section. Add new modules here.
+const MENU_GROUPS = [
+  {
+    label: "Academics",
+    items: [
+      { to: "/attendance", label: "Attendance", icon: "attendance" as const },
+      { to: "/homework", label: "Homework", icon: "book" as const },
+      { to: "/results", label: "Results", icon: "result" as const },
+    ],
+  },
+  {
+    label: "Finance",
+    items: [{ to: "/fees", label: "Fees", icon: "fee" as const }],
+  },
+  {
+    label: "Account",
+    items: [
+      { to: "/profile", label: "Profile", icon: "profile" as const },
+      { to: "/notifications", label: "Notifications", icon: "bell" as const },
+    ],
+  },
 ];
 
 // Desktop header title per route — Home shows the school name instead of "Home".
@@ -21,7 +55,6 @@ const PAGE_TITLES: Record<string, string> = {
   "/fees": "Fees",
   "/results": "Results",
   "/profile": "Profile",
-  "/homework": "Homework",
   "/notifications": "Notifications",
 };
 
@@ -33,6 +66,7 @@ export const AppShell = () => {
   const location = useLocation();
   const pageTitle = location.pathname === "/" ? (student?.school_name || "Dashboard") : (PAGE_TITLES[location.pathname] || "School Office");
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDEBAR_KEY) === "1");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleCollapsed = () => {
     setCollapsed((c) => {
@@ -105,14 +139,14 @@ export const AppShell = () => {
         </main>
       </div>
 
-      {/* Mobile bottom nav */}
+      {/* Mobile bottom nav — fixed 4 + Menu, never more */}
       <nav className="hide-desktop" style={{
         position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 50,
         background: "var(--bg-elevated)", borderTop: "1px solid var(--border)",
         paddingBottom: "var(--sab)",
         display: "flex", justifyContent: "space-around",
       }}>
-        {NAV.map((item) => (
+        {MOBILE_NAV.map((item) => (
           <NavLink key={item.to} to={item.to} end={item.end} style={({ isActive }) => ({
             display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
             padding: "10px 12px 8px", color: isActive ? "var(--brand)" : "var(--text-faint)",
@@ -122,7 +156,53 @@ export const AppShell = () => {
             {item.label}
           </NavLink>
         ))}
+        <button
+          onClick={() => setMenuOpen(true)}
+          style={{
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
+            padding: "10px 12px 8px", color: "var(--text-faint)",
+            fontSize: 10.5, fontWeight: 600, flex: 1, background: "none", border: "none",
+          }}
+        >
+          <Icon name="menu" size={21} />
+          Menu
+        </button>
       </nav>
+
+      {/* Grouped "More" sheet — every module beyond the fixed 4 lives here */}
+      <Modal open={menuOpen} onClose={() => setMenuOpen(false)} title="Menu">
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          {MENU_GROUPS.map((group) => (
+            <div key={group.label}>
+              <p style={{
+                fontSize: 11.5, fontWeight: 700, color: "var(--text-faint)",
+                textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 8,
+              }}>
+                {group.label}
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {group.items.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setMenuOpen(false)}
+                    style={({ isActive }) => ({
+                      display: "flex", alignItems: "center", gap: 12,
+                      padding: "11px 10px", borderRadius: 12,
+                      color: isActive ? "var(--brand)" : "var(--text)",
+                      background: isActive ? "var(--brand-light)" : "transparent",
+                      fontWeight: 600, fontSize: 14.5,
+                    })}
+                  >
+                    <Icon name={item.icon} size={19} />
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Modal>
 
       <style>{`
         @media (max-width: 899px) { .hide-mobile { display: none !important; } }
