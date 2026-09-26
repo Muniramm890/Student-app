@@ -11,7 +11,7 @@ import { SkeletonBlock } from "../components/ui/Skeleton";
 type DashboardData = {
   attendancePercent: number | null;
   fee: { total_fee_paise: number; paid_paise: number; pending_paise: number } | null;
-  todayClasses: { period_number: number; label: string; start_time: string; end_time: string; subject_name: string; teacher_name: string }[];
+    todayClasses: { period_number: number; label: string; start_time: string; end_time: string; subject_name: string; teacher_name: string; is_substituted: number; substitute_teacher_name: string | null }[];
   unreadNotifications: number;
 };
 
@@ -59,10 +59,31 @@ export const Dashboard = () => {
   <QuickAction to="/notifications" icon="bell" label="Notices" badge={data.unreadNotifications} />
 </div>
 
-          <h2 style={{ fontSize: 17, marginBottom: 12 }}>Today's classes</h2>
+        <h2 style={{ fontSize: 17, marginBottom: 12 }}>Today's classes</h2>
           {data.todayClasses.length === 0 ? (
             <EmptyState text="No classes scheduled for today." />
           ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {data.todayClasses.map((c, i) => (
+                <div key={i} style={{ padding: "10px 14px", borderRadius: 10, background: "var(--surface)", border: `1px solid ${c.is_substituted ? "var(--brand)" : "var(--border)"}` }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontWeight: 700, fontSize: 13 }}>{c.subject_name || c.label}</span>
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{c.start_time}–{c.end_time}</span>
+                  </div>
+                  {c.is_substituted ? (
+                    <div style={{ marginTop: 4, fontSize: 12 }}>
+                      <span style={{ color: "var(--text-faint)", textDecoration: "line-through" }}>{c.teacher_name}</span>
+                      {" → "}
+                      <span style={{ color: "var(--brand)", fontWeight: 700 }}>{c.substitute_teacher_name}</span>
+                      <span style={{ marginLeft: 6, fontSize: 10, background: "rgba(var(--brand-rgb),0.12)", color: "var(--brand)", padding: "2px 6px", borderRadius: 6, fontWeight: 700 }}>SUBSTITUTE</span>
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: 4, fontSize: 12, color: "var(--text-muted)" }}>{c.teacher_name}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {data.todayClasses.map((c) => (
                 <div key={c.period_number} className="card" style={{ display: "flex", alignItems: "center", gap: 14, padding: 14 }}>
