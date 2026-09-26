@@ -12,6 +12,7 @@ const NAV = [
   { to: "/", label: "Home", icon: "home" as const, end: true },
   { to: "/attendance", label: "Attendance", icon: "attendance" as const },
   { to: "/homework", label: "Homework", icon: "book" as const },
+  { to: "/tests", label: "Tests", icon: "grid" as const },
   { to: "/fees", label: "Fees", icon: "fee" as const },
   { to: "/results", label: "Results", icon: "result" as const },
   { to: "/profile", label: "Profile", icon: "profile" as const },
@@ -33,6 +34,7 @@ const MENU_GROUPS = [
     items: [
       { to: "/attendance", label: "Attendance", icon: "attendance" as const },
       { to: "/homework", label: "Homework", icon: "book" as const },
+      { to: "/tests", label: "Tests", icon: "grid" as const },
       { to: "/results", label: "Results", icon: "result" as const },
     ],
   },
@@ -107,7 +109,7 @@ export const AppShell = () => {
 
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
         {/* Top bar */}
-                <header style={{
+        <header style={{
           position: "sticky", top: 0, zIndex: 40,
           background: "color-mix(in srgb, var(--bg) 88%, transparent)",
           backdropFilter: "blur(10px)",
@@ -118,7 +120,7 @@ export const AppShell = () => {
             maxWidth: 1120, margin: "0 auto", width: "100%",
             display: "flex", alignItems: "center", justifyContent: "space-between",
           }}>
-         <div className="hide-desktop" style={{ minWidth: 0, overflow: "hidden", flex: "1 1 auto" }}><Brand compact /></div>
+            <div className="hide-desktop" style={{ minWidth: 0, overflow: "hidden", flex: "1 1 auto" }}><Brand compact /></div>
             <div className="hide-mobile" style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18 }}>
               {pageTitle}
             </div>
