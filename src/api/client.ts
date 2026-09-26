@@ -103,4 +103,11 @@ export const StudentApi = {
     apiRequest("/student/payments/cashfree/create-order", "POST", { amount_paise }),
   cashfreeVerify: (payload: Record<string, unknown>) =>
     apiRequest("/student/payments/cashfree/verify", "POST", payload),
+
+  // Quick Tests — thin bridge to the school's GAS/Sheets backend. Same
+  // action/payload contract as before (fetchTest, getTestRegistry,
+  // submitResult, ...); only the transport now goes through our normal
+  // token + apiRequest instead of a separate localStorage key.
+  quickTestsGasSync: (action: string, payload: Record<string, unknown> = {}) =>
+    apiRequest<any>("/student/quick-tests/gas-sync", "POST", { action, payload }),
 };
