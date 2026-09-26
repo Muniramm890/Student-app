@@ -84,26 +84,7 @@ export const Dashboard = () => {
               ))}
             </div>
           )}
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {data.todayClasses.map((c) => (
-                <div key={c.period_number} className="card" style={{ display: "flex", alignItems: "center", gap: 14, padding: 14 }}>
-                  <div style={{
-                    width: 46, textAlign: "center", fontSize: 11, fontWeight: 700, color: "var(--brand)",
-                    background: "var(--brand-light)", borderRadius: 10, padding: "6px 0", flexShrink: 0,
-                  }}>
-                    P{c.period_number}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: 14.5 }}>{c.subject_name || c.label}</div>
-                    <div style={{ fontSize: 12.5, color: "var(--text-muted)" }}>{c.teacher_name || "—"}</div>
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--text-faint)", flexShrink: 0 }}>
-                    {c.start_time}–{c.end_time}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+           
         </>
       )}
     </div>
