@@ -14,6 +14,7 @@ import { Results } from "./pages/Results";
 import { Profile } from "./pages/Profile";
 import { Notifications } from "./pages/Notifications";
 import { Homework } from "./pages/Homework";
+import { Tests } from "./pages/Tests";
 
 // DialogProvider sits outside AuthProvider so AuthProvider (boot-check /
 // connection-error / idle-timeout dialogs) can call useDialog() itself —
@@ -54,6 +55,7 @@ const Gate = () => {
         <Route path="fees" element={<Fees />} />
         <Route path="results" element={<Results />} />
         <Route path="homework" element={<Homework />} />
+        <Route path="tests" element={<Tests />} />
         <Route path="profile" element={<Profile />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="*" element={<Navigate to="/" replace />} />
