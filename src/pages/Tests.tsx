@@ -1,16 +1,6 @@
 // FILE: student-app/src/pages/Tests.tsx
-//
-// Quick Tests — restyle + integration of the old standalone GAS-powered
-// testing module into the Student App's own design system. Same backend,
-// same GAS actions/payloads (fetchTest, getTestRegistry, submitResult) —
-// this is a frontend-only rebuild. See StudentApi.quickTestsGasSync in
-// api/client.ts for the transport (now uses our real auth token, not the
-// old module's separate "student_token" localStorage key).
-//
-// Library (browse + "your performance") renders as a normal page inside
-// AppShell. Starting a test switches to a full-screen exam engine
-// (position:fixed, covers the whole app incl. nav) — kept full-screen
-// intentionally, same as before, so nothing distracts during a timed test.
+
+
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
@@ -97,17 +87,30 @@ const ConfirmModal = ({ open, title, message, confirmLabel = "Yes", cancelLabel 
 // ═══════════════════════════════════════════════════════════════
 const useProctor = () => {
   const streamRef = useRef<MediaStream | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoElRef = useRef<HTMLVideoElement | null>(null); // the real DOM node, used for canvas drawing
   const snapshotsRef = useRef<string[]>([]);
   const intervalRef = useRef<any>(null);
   const [ready, setReady] = useState(false);
   const [denied, setDenied] = useState(false);
 
+  // Callback ref: fires whenever React actually mounts/unmounts the <video>
+  // element, whenever that happens (even after the stream already exists) —
+  // fixes the black-frame bug where the video tag mounts *after* start()
+  // already ran, so a plain useRef never got the stream attached.
+  const videoRef = useCallback((node: HTMLVideoElement | null) => {
+    videoElRef.current = node;
+    if (node && streamRef.current) {
+      node.srcObject = streamRef.current;
+      node.play?.().catch(() => {});
+    }
+  }, []);
+
   const takeSnapshot = useCallback(() => {
-    if (!videoRef.current || !streamRef.current) return;
+    const v = videoElRef.current;
+    if (!v || !streamRef.current || !v.videoWidth) return; // videoWidth=0 means no frame decoded yet — avoid black capture
     const canvas = document.createElement("canvas");
     canvas.width = 480; canvas.height = 360;
-    canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    canvas.getContext("2d")?.drawImage(v, 0, 0, canvas.width, canvas.height);
     snapshotsRef.current.push(canvas.toDataURL("image/jpeg", 0.85));
   }, []);
 
@@ -115,7 +118,10 @@ const useProctor = () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
       streamRef.current = stream;
-      if (videoRef.current) videoRef.current.srcObject = stream;
+      if (videoElRef.current) {
+        videoElRef.current.srcObject = stream;
+        videoElRef.current.play?.().catch(() => {});
+      }
       setReady(true); setDenied(false);
       setTimeout(takeSnapshot, 2500);
       intervalRef.current = setInterval(takeSnapshot, 120000);
