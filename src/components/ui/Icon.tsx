@@ -28,6 +28,13 @@ const PATHS: Record<string, string> = {
   x: "M18 6L6 18M6 6l12 12",
   download: "M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3",
   refresh: "M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15",
+  grid: "M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z",
+  clock: "M12 2a10 10 0 100 20 10 10 0 000-20zM12 6v6l4 2",
+  camera: "M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z M12 17a4 4 0 100-8 4 4 0 000 8z",
+  flag: "M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z M4 22V15",
+  alert: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z",
+  chevronLeft: "M15 18l-6-6 6-6",
+  eraser: "M20 5H9l-7 7 7 7h11a2 2 0 002-2V7a2 2 0 00-2-2z M18 9l-6 6M12 9l6 6",
 };
 
 export const Icon = ({ name, size = 20, color = "currentColor", strokeWidth = 2 }: {
