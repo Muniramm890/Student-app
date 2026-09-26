@@ -1,5 +1,5 @@
 // FILE: student-app/src/pages/Tests.tsx
-
+//
 
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
@@ -245,6 +245,7 @@ const TestEngine = ({ testId, student, onExit, onSubmitted }: any) => {
   const [railOpen, setRailOpen] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [qElapsed, setQElapsed] = useState(0);
   const [showCamDenied, setShowCamDenied] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -300,6 +301,7 @@ const TestEngine = ({ testId, student, onExit, onSubmitted }: any) => {
     timerRef.current = setInterval(() => {
       const diff = Math.ceil((endTimeRef.current - Date.now()) / 1000);
       setTimeLeft(Math.max(0, diff));
+      setQElapsed(Math.floor((Date.now() - qStartRef.current) / 1000));
       if (diff <= 0) { clearInterval(timerRef.current); handleSubmit(true); }
     }, 1000);
     return () => clearInterval(timerRef.current);
@@ -315,6 +317,7 @@ const TestEngine = ({ testId, student, onExit, onSubmitted }: any) => {
     recordTime();
     setCurrentIndex(idx);
     qStartRef.current = Date.now();
+    setQElapsed(0);
     setSheetOpen(false);
   };
 
@@ -462,11 +465,16 @@ const TestEngine = ({ testId, student, onExit, onSubmitted }: any) => {
                 <span className="qt-mono" style={{ fontSize: 12, fontWeight: 700, color: "var(--brand)", background: "var(--brand-light)", padding: "6px 14px", borderRadius: 100 }}>
                   Q {currentIndex + 1} / {questions.length}
                 </span>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "var(--text-muted)", fontWeight: 600 }}>
-                  <div style={{ width: 60, height: 5, borderRadius: 3, background: "var(--surface-alt)", overflow: "hidden" }}>
-                    <div style={{ width: `${(answeredCount / questions.length) * 100}%`, height: "100%", background: "var(--success)", transition: "width .3s" }} />
+                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <span className="qt-mono" style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--text-faint)", fontWeight: 600 }} title="Time spent on this question">
+                    <Icon name="clock" size={12} /> {fmtTime(qElapsed)}
+                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "var(--text-muted)", fontWeight: 600 }}>
+                    <div style={{ width: 60, height: 5, borderRadius: 3, background: "var(--surface-alt)", overflow: "hidden" }}>
+                      <div style={{ width: `${(answeredCount / questions.length) * 100}%`, height: "100%", background: "var(--success)", transition: "width .3s" }} />
+                    </div>
+                    {answeredCount}/{questions.length}
                   </div>
-                  {answeredCount}/{questions.length}
                 </div>
               </div>
               <QuestionView key={currentIndex} q={q} value={answers[currentIndex]} onChange={handleAnswer} />
@@ -601,6 +609,7 @@ const TestLibrary = ({ student, onStart }: any) => {
     score: Number(t.myResult?.score ?? t.myScore ?? t.score ?? 0),
   }));
   const avgScore = trend.length ? Math.round(trend.reduce((s, t) => s + t.score, 0) / trend.length) : null;
+  const bestScore = trend.length ? Math.max(...trend.map((t) => t.score)) : null;
 
   return (
     <div className="enter">
@@ -613,10 +622,23 @@ const TestLibrary = ({ student, onStart }: any) => {
         <>
           {attempted.length > 0 && (
             <div className="card" style={{ marginBottom: 18 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: trend.length > 1 ? 10 : 0 }}>
-                <p style={{ fontSize: 13, fontWeight: 600 }}>Your performance</p>
-                {avgScore != null && <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--brand)" }}>Avg {avgScore}%</span>}
+              <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Your performance</p>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: trend.length > 1 ? 14 : 0 }}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 800 }}>{attempted.length}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--text-faint)", marginTop: 2, textTransform: "uppercase", letterSpacing: ".03em" }}>Tests Taken</div>
+                </div>
+                <div style={{ textAlign: "center", borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)" }}>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 800, color: "var(--brand)" }}>{avgScore}%</div>
+                  <div style={{ fontSize: 10.5, color: "var(--text-faint)", marginTop: 2, textTransform: "uppercase", letterSpacing: ".03em" }}>Average</div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 800, color: "var(--success)" }}>{bestScore}%</div>
+                  <div style={{ fontSize: 10.5, color: "var(--text-faint)", marginTop: 2, textTransform: "uppercase", letterSpacing: ".03em" }}>Best Score</div>
+                </div>
               </div>
+
               {trend.length > 1 && (
                 <ResponsiveContainer width="100%" height={120}>
                   <LineChart data={trend}>
