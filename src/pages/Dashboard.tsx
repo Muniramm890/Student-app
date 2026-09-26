@@ -52,7 +52,8 @@ export const Dashboard = () => {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 24 }}>
-  <QuickAction to="/homework" icon="book" label="Homework" />   {/* ← add this */}
+  <QuickAction to="/homework" icon="book" label="Homework" />
+  <QuickAction to="/tests" icon="grid" label="Tests" />
   <QuickAction to="/fees" icon="card" label="Pay Fees" />
   <QuickAction to="/results" icon="result" label="Results" />
   <QuickAction to="/attendance" icon="calendar" label="Attendance" />
