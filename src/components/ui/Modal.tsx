@@ -28,6 +28,7 @@ export const Modal = ({ open, onClose, title, children, maxWidth = 420 }: Props)
 
   return createPortal(
     <div
+      data-native-back
       onClick={onClose}
       style={{
         position: "fixed", inset: 0, zIndex: 10000,
