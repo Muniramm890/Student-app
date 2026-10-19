@@ -1,0 +1,86 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "android/**"
+      - "index.html"
+      - "package.json"
+      - "capacitor.config.ts"
+      - ".github/workflows/android-apk.yml"
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Prepare Android SDK (preinstalled on ubuntu-24.04)
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" || true
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build APK
+        shell: bash
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee ../build.log
+
+      - name: Show Gradle error (as annotation)
+        if: failure()
+        run: |
+          if [ -f build.log ]; then
+            MSG=$(grep -n -i -E "What went wrong|FAILURE|error:|Could not|not found|SDK location|license|Exception" build.log | head -25 | tr '\n' '|')
+            TAIL=$(tail -n 25 build.log | tr '\n' '|')
+            echo "::error title=Gradle build failed::${MSG} --- TAIL: ${TAIL}"
+          fi
+
+      - name: Name the APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk SchoolOffice-Student.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SchoolOffice-Student-apk
+          path: SchoolOffice-Student.apk
+
+      - name: Publish as GitHub Release (easy phone download)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-latest --cleanup-tag --yes || true
+          gh release create android-latest SchoolOffice-Student.apk \
+            --target "${{ github.sha }}" \
+            --title "Android APK (latest)" \
+            --notes "Built from commit ${GITHUB_SHA::7}. Download on your Android phone, open it, allow 'Install unknown apps' when asked." \
+            --prerelease
