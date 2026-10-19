@@ -10,6 +10,7 @@ import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import { Attendance } from "./pages/Attendance";
 import { Fees } from "./pages/Fees";
+import { CashfreeReturn } from "./pages/CashfreeReturn";
 import { Results } from "./pages/Results";
 import { Profile } from "./pages/Profile";
 import { Notifications } from "./pages/Notifications";
@@ -53,6 +54,7 @@ const Gate = () => {
         <Route index element={<Dashboard />} />
         <Route path="attendance" element={<Attendance />} />
         <Route path="fees" element={<Fees />} />
+        <Route path="fees/cashfree-return" element={<CashfreeReturn />} />
         <Route path="results" element={<Results />} />
         <Route path="homework" element={<Homework />} />
         <Route path="tests" element={<Tests />} />

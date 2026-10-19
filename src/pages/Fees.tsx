@@ -217,8 +217,12 @@ const PayModal = ({ open, onClose, pendingPaise, onPaid }: {
         return;
       }
 
+      // Cashfree is sending the browser to the return URL (UPI app / 3-D Secure / popup blocked): this page is about to
+      // unload and /fees/cashfree-return verifies the payment.
+      if (result?.redirect) return;
+
       try {
-        await StudentApi.cashfreeVerify({ cf_order_id: order.order_id, amount_paise: amountPaise });
+        await StudentApi.cashfreeVerifyWithRetry({ cf_order_id: order.order_id, amount_paise: amountPaise });
         show("Payment successful!", "success");
         onPaid();
       } catch (e: any) {

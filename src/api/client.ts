@@ -112,6 +112,21 @@ export const StudentApi = {
     apiRequest("/student/payments/cashfree/create-order", "POST", { amount_paise }),
   cashfreeVerify: (payload: Record<string, unknown>) =>
     apiRequest("/student/payments/cashfree/verify", "POST", payload),
+  // The server answers HTTP 409 "still being processed" while Cashfree has not finalised the payment yet
+  // (UPI / netbanking can take a few seconds). Retry a few times before reporting it as pending.
+  cashfreeVerifyWithRetry: async (payload: Record<string, unknown>, tries = 4, delayMs = 3000) => {
+    let lastErr: unknown;
+    for (let i = 1; i <= tries; i++) {
+      try {
+        return await apiRequest("/student/payments/cashfree/verify", "POST", payload);
+      } catch (e: any) {
+        lastErr = e;
+        if (e?.status !== 409) throw e; // real failure -> do not retry
+        if (i < tries) await new Promise((r) => setTimeout(r, delayMs));
+      }
+    }
+    throw lastErr;
+  },
 
   // Quick Tests — thin bridge to the school's GAS/Sheets backend. Same
   // action/payload contract as before (fetchTest, getTestRegistry,
