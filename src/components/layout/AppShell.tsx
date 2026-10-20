@@ -1,11 +1,13 @@
 // FILE: student-app/src/components/layout/AppShell.tsx
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Icon } from "../ui/Icon";
 import { Modal } from "../ui/Modal";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useAuth } from "../../contexts/AuthContext";
+import { StudentApi } from "../../api/client";
+import { usePolling } from "../../hooks/usePolling";
 
 // Desktop sidebar — unconstrained, lists everything, keeps growing as modules are added.
 const NAV = [
@@ -66,9 +68,21 @@ export const AppShell = () => {
   const { mode, toggle } = useTheme();
   const { student } = useAuth();
   const location = useLocation();
-  const pageTitle = location.pathname === "/" ? (student?.school_name || "Dashboard") : (PAGE_TITLES[location.pathname] || "School Office");
+  const pageTitle = location.pathname === "/" ? (student?.school_name || "Dashboard") : (PAGE_TITLES[location.pathname] || (location.pathname.startsWith("/notifications") ? "Notifications" : "School Office"));
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDEBAR_KEY) === "1");
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // unread chats (new announcement / new reply) -> badge on the bell
+  const [unread, setUnread] = useState(0);
+  const refreshUnread = useCallback(() => {
+    StudentApi.inboxUnread().then((r: any) => setUnread(r?.data?.count || 0)).catch(() => {});
+  }, []);
+  useEffect(() => { refreshUnread(); }, [refreshUnread, location.pathname]);
+  useEffect(() => {
+    window.addEventListener("inbox:changed", refreshUnread);
+    return () => window.removeEventListener("inbox:changed", refreshUnread);
+  }, [refreshUnread]);
+  usePolling(refreshUnread, 30000);
 
   const toggleCollapsed = () => {
     setCollapsed((c) => {
@@ -128,11 +142,18 @@ export const AppShell = () => {
               <span className="hide-mobile" style={{ fontSize: 13.5, color: "var(--text-muted)" }}>
                 Hi, {student?.first_name || "Student"}
               </span>
-              <NavLink to="/notifications" style={{
+              <NavLink to="/notifications" aria-label="Notifications" style={{
                 width: 38, height: 38, borderRadius: 12, background: "var(--surface-alt)",
-                display: "flex", alignItems: "center", justifyContent: "center",
+                display: "flex", alignItems: "center", justifyContent: "center", position: "relative",
               }}>
                 <Icon name="bell" size={18} />
+                {unread > 0 && (
+                  <span style={{
+                    position: "absolute", top: -5, right: -5, minWidth: 18, height: 18, padding: "0 5px", borderRadius: 100,
+                    background: "var(--danger)", color: "#fff", fontSize: 10.5, fontWeight: 800,
+                    display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid var(--bg)",
+                  }}>{unread > 9 ? "9+" : unread}</span>
+                )}
               </NavLink>
               <div className="hide-desktop"><ThemeToggle mode={mode} toggle={toggle} /></div>
               <Avatar url={student?.photo_url} name={student?.first_name} />

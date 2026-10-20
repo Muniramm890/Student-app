@@ -58,6 +58,7 @@ const Gate = () => {
         <Route path="tests" element={<Tests />} />
         <Route path="profile" element={<Profile />} />
         <Route path="notifications" element={<Notifications />} />
+        <Route path="notifications/:messageId" element={<Notifications />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

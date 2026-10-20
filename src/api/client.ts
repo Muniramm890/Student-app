@@ -81,6 +81,15 @@ export const StudentApi = {
   notifications: () => apiRequest("/student/dashboard/notifications"),
   markNotificationRead: (id: string) => apiRequest(`/student/dashboard/notifications/${id}/read`, "PUT"),
 
+  // Inbox (chat view of announcements)
+  inbox: (limit = 50) => apiRequest(`/student/inbox?limit=${limit}`),
+  inboxUnread: () => apiRequest("/student/inbox/unread-count"),
+  conversation: (messageId: string) => apiRequest(`/student/inbox/${messageId}`),
+  conversationReplies: (messageId: string, sinceSeq: number) =>
+    apiRequest(`/student/inbox/${messageId}/replies?since_seq=${sinceSeq}`),
+  sendReply: (messageId: string, body: string, client_msg_id: string) =>
+    apiRequest(`/student/inbox/${messageId}/reply`, "POST", { body, client_msg_id }),
+
   attendanceHistory: (from?: string, to?: string) => {
     const qs = from && to ? `?from=${from}&to=${to}` : "";
     return apiRequest(`/student/attendance/me/history${qs}`);
