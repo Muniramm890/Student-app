@@ -88,6 +88,14 @@ export const ChatThread = ({
     if (el && stick.current) el.scrollTop = el.scrollHeight;
   }, [messages.length, loading, pending]);
   useEffect(() => { stick.current = true; }, [announcement?.id]);
+  // keyboard open/close par agar user bottom par tha to bottom par hi rahe
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const h = () => { const el = scroller.current; if (el && stick.current) el.scrollTop = el.scrollHeight; };
+    vv.addEventListener("resize", h);
+    return () => vv.removeEventListener("resize", h);
+  }, []);
 
   useEffect(() => {
     const el = ta.current;
@@ -124,7 +132,7 @@ export const ChatThread = ({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
-      <div ref={scroller} onScroll={onScroll} onClick={() => setMenu(false)} style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "14px 14px 8px", display: "flex", flexDirection: "column", gap: 8 }}>
+      <div ref={scroller} onScroll={onScroll} onClick={() => setMenu(false)} style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "14px 14px 8px", display: "flex", flexDirection: "column", gap: 8 }}>
         {announcement && (
           <div style={{ background: "var(--surface-alt)", border: "1px solid var(--border)", borderLeft: "4px solid var(--brand)", borderRadius: 14, padding: 14, marginBottom: 6 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11.5, color: "var(--text-muted)", marginBottom: 6, flexWrap: "wrap" }}>

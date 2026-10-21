@@ -12,6 +12,8 @@ import { useChatThread, type ChatMsg } from "../hooks/useChatThread";
 import { buildReplyForm, type Prepared } from "../utils/chatMedia";
 import { usePolling } from "../hooks/usePolling";
 import { useMediaQuery } from "../hooks/useMediaQuery";
+import { useVisualViewport } from "../hooks/useVisualViewport";
+import { isNative } from "../native";
 
 type InboxItem = {
   message_id: string; title: string; category: string; source_module?: string; kind?: string;
@@ -66,7 +68,7 @@ const Conversation = ({ messageId, onBack, onOpened, showBack }: { messageId: st
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)", minHeight: 58 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: "1px solid var(--border)", background: "var(--bg-elevated)", minHeight: 58, flexShrink: 0 }}>
         {showBack && (
           <button className="btn btn-ghost" onClick={onBack} aria-label="Back"
             style={{ width: 40, height: 40, padding: 0, flexShrink: 0, justifyContent: "center", touchAction: "manipulation" }}>
@@ -95,6 +97,8 @@ export const Notifications = () => {
   const { messageId } = useParams();
   const nav = useNavigate();
   const isDesktop = useMediaQuery("(min-width: 900px)");
+  // Phone: open chat takes the visible area only (keyboard-safe)
+  const vp = useVisualViewport(!isDesktop && !!messageId);
   const [items, setItems] = useState<InboxItem[] | null>(null);
   const [error, setError] = useState("");
   const [onlyUnread, setOnlyUnread] = useState(false);
@@ -210,8 +214,14 @@ export const Notifications = () => {
       {list}
       {messageId && (
         <div
-          style={{ position: "fixed", inset: 0, zIndex: 60, background: "var(--bg)", display: "flex", flexDirection: "column", paddingTop: "var(--sat)" }}>
-          <Conversation key={messageId} messageId={messageId} onBack={back} onOpened={onOpened} showBack />
+          style={{
+            position: "fixed", left: 0, right: 0, zIndex: 60, background: "var(--bg)", display: "flex", flexDirection: "column",
+            paddingTop: "var(--sat)", overflow: "hidden", overscrollBehavior: "contain",
+            ...(vp ? { top: vp.top, height: vp.height } : { top: 0, bottom: 0 }),
+            ...(vp?.keyboardOpen ? ({ "--sab": "0px" } as any) : {}),
+          }}>
+          {/* Android app: system back button / gesture goes back, so no on-screen back button there */}
+          <Conversation key={messageId} messageId={messageId} onBack={back} onOpened={onOpened} showBack={!isNative} />
         </div>
       )}
     </div>
