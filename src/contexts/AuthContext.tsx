@@ -1,6 +1,7 @@
 // FILE: student-app/src/contexts/AuthContext.tsx
 
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import { unregisterPush } from "../native";
 import { StudentApi, getToken, setToken, clearToken, setUnauthorizedHandler } from "../api/client";
 import { useDialog } from "./DialogContext";
 
@@ -28,6 +29,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [forceLoggedOut, setForceLoggedOut] = useState(false);
 
   const logout = () => {
+    unregisterPush((t) => StudentApi.unregisterDevice(t)); // fire-and-forget; reads the token before it is cleared
     clearToken();
     setStudent(null);
   };

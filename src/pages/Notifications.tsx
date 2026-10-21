@@ -9,6 +9,7 @@ import { Icon } from "../components/ui/Icon";
 import { SkeletonBlock } from "../components/ui/Skeleton";
 import { ChatThread } from "../components/chat/ChatThread";
 import { useChatThread, type ChatMsg } from "../hooks/useChatThread";
+import { buildReplyForm, type Prepared } from "../utils/chatMedia";
 import { usePolling } from "../hooks/usePolling";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 
@@ -43,14 +44,14 @@ const Conversation = ({ messageId, onBack, onOpened, showBack }: { messageId: st
   const load = useCallback(async () => {
     const res: any = await StudentApi.conversation(messageId);
     const d = res?.data || {};
-    return { meta: d, replies: (d.replies || []) as ChatMsg[] };
+    return { meta: d, replies: (d.replies || []) as ChatMsg[], receipts: d.receipts || [] };
   }, [messageId]);
   const poll = useCallback(async (since: number) => {
     const res: any = await StudentApi.conversationReplies(messageId, since);
-    return (res?.data?.replies || []) as ChatMsg[];
+    return (res?.data || { replies: [] }) as { replies: ChatMsg[]; receipts?: any[] };
   }, [messageId]);
-  const send = useCallback(async (body: string, cid: string) => {
-    const res: any = await StudentApi.sendReply(messageId, body, cid);
+  const send = useCallback(async (body: string, cid: string, prepared?: Prepared | null) => {
+    const res: any = await StudentApi.sendReply(messageId, buildReplyForm(body, cid, prepared));
     return res.data as ChatMsg;
   }, [messageId]);
 

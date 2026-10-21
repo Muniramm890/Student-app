@@ -1,12 +1,13 @@
 // FILE: student-app/src/components/layout/AppShell.tsx
 
 import { useCallback, useEffect, useState } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Icon } from "../ui/Icon";
 import { Modal } from "../ui/Modal";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { StudentApi } from "../../api/client";
+import { registerPush } from "../../native";
 import { usePolling } from "../../hooks/usePolling";
 
 // Desktop sidebar — unconstrained, lists everything, keeps growing as modules are added.
@@ -68,9 +69,21 @@ export const AppShell = () => {
   const { mode, toggle } = useTheme();
   const { student } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const pageTitle = location.pathname === "/" ? (student?.school_name || "Dashboard") : (PAGE_TITLES[location.pathname] || (location.pathname.startsWith("/notifications") ? "Notifications" : "School Office"));
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDEBAR_KEY) === "1");
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // push: token register (app me hi) + notification tap -> us chat ko kholo
+  useEffect(() => { registerPush((t) => StudentApi.registerDevice(t)); }, []);
+  useEffect(() => {
+    const h = (e: Event) => {
+      const d: any = (e as CustomEvent).detail || {};
+      if (d.messageId) navigate(`/notifications/${d.messageId}`);
+    };
+    window.addEventListener("open-chat", h);
+    return () => window.removeEventListener("open-chat", h);
+  }, [navigate]);
 
   // unread chats (new announcement / new reply) -> badge on the bell
   const [unread, setUnread] = useState(0);

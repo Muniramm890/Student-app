@@ -34,13 +34,14 @@ export async function apiRequest<T = any>(
 ): Promise<ApiEnvelope<T>> {
   const token = getToken();
   const headers: Record<string, string> = { Accept: "application/json" };
-  if (body) headers["Content-Type"] = "application/json";
+  const isForm = typeof FormData !== "undefined" && body instanceof FormData;
+  if (body && !isForm) headers["Content-Type"] = "application/json"; // FormData: browser sets the multipart boundary itself
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const res = await fetch(`${API_BASE_URL}${endpoint}`, {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: body ? (isForm ? (body as FormData) : JSON.stringify(body)) : undefined,
   });
 
   if (res.status === 204) return { success: true, message: "", data: null as T };
@@ -87,8 +88,12 @@ export const StudentApi = {
   conversation: (messageId: string) => apiRequest(`/student/inbox/${messageId}`),
   conversationReplies: (messageId: string, sinceSeq: number) =>
     apiRequest(`/student/inbox/${messageId}/replies?since_seq=${sinceSeq}`),
-  sendReply: (messageId: string, body: string, client_msg_id: string) =>
-    apiRequest(`/student/inbox/${messageId}/reply`, "POST", { body, client_msg_id }),
+  sendReply: (messageId: string, form: FormData) =>
+    apiRequest(`/student/inbox/${messageId}/reply`, "POST", form),
+
+  // Push (FCM) device token
+  registerDevice: (fcm_token: string) => apiRequest("/student/device-tokens", "POST", { fcm_token, platform: "android" }),
+  unregisterDevice: (fcm_token: string) => apiRequest("/student/device-tokens", "DELETE", { fcm_token }),
 
   attendanceHistory: (from?: string, to?: string) => {
     const qs = from && to ? `?from=${from}&to=${to}` : "";

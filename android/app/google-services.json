@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1016038633895",
+    "project_id": "schooloffice-2601f",
+    "storage_bucket": "schooloffice-2601f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016038633895:android:433cb7926d1d90c6558682",
+        "android_client_info": {
+          "package_name": "tech.schooloffice.admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1zd-1duMKnbuXp0gbiIwb3szoDPDGP9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016038633895:android:c0895a8b4baade59558682",
+        "android_client_info": {
+          "package_name": "tech.schooloffice.student"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1zd-1duMKnbuXp0gbiIwb3szoDPDGP9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
