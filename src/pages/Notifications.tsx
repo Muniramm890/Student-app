@@ -85,8 +85,7 @@ const Conversation = ({ messageId, onBack, onOpened, showBack }: { messageId: st
           announcement={m ? { id: m.message_id, title: m.title, body: m.body, created_at: m.created_at, created_by_name: m.created_by_name, attachments: m.attachments, label } : null}
           messages={t.messages} ownSide="recipient" canReply={!!m?.can_reply} closedNote={closedNote}
           onSend={t.send} onRetry={t.retry} sending={t.sending} loading={t.loading} error={t.error}
-          privacyNote="Only the sender and school office can see your reply."
-          emptyHint={m?.can_reply ? "You can reply to this message. Your reply stays private." : ""}
+          emptyHint={m?.can_reply ? "You can reply to this message." : ""}
         />
       </div>
     </div>
