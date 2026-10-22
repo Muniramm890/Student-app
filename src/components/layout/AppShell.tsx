@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Icon } from "../ui/Icon";
 import { Modal } from "../ui/Modal";
-import { useTheme } from "../../contexts/ThemeContext";
+import { ProfileModal } from "./ProfileModal";
+import { useDialog } from "../../contexts/DialogContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { StudentApi } from "../../api/client";
 import { registerPush } from "../../native";
@@ -77,13 +78,21 @@ const PAGE_TITLES: Record<string, string> = {
 const SIDEBAR_KEY = "student_sidebar_collapsed";
 
 export const AppShell = () => {
-  const { mode, toggle } = useTheme();
   const { student, logout } = useAuth();
+  const { dialogConfirm } = useDialog();
   const location = useLocation();
   const navigate = useNavigate();
   const pageTitle = location.pathname === "/" ? (student?.school_name || "Dashboard") : (PAGE_TITLES[location.pathname] || (location.pathname.startsWith("/notifications") ? "Notifications" : "School Office"));
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDEBAR_KEY) === "1");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const confirmLogout = async () => {
+    if (await dialogConfirm("You'll need to sign in again to access your account.", "Sign out?")) {
+      StudentApi.logout().catch(() => {});
+      logout();
+    }
+  };
 
   // push: token register (app me hi) + notification tap -> us chat ko kholo
   useEffect(() => { registerPush((t) => StudentApi.registerDevice(t)); }, []);
@@ -125,25 +134,34 @@ export const AppShell = () => {
         position: "sticky", top: 0, height: "100dvh", overflow: "hidden",
         transition: "width 0.22s var(--ease)",
       }}>
-        {/* Header: logo + school name, collapse toggle */}
-        <div style={{
-          padding: collapsed ? "16px 0" : "16px 12px 16px 14px", borderBottom: "1px solid var(--border)",
-          display: "flex", alignItems: "center", gap: 8, flexDirection: collapsed ? "column" : "row",
-          justifyContent: collapsed ? "center" : "space-between", minHeight: 68,
-        }}>
-          <div style={{ minWidth: 0, flex: collapsed ? "none" : 1 }}><Brand logoOnly={collapsed} /></div>
-          <button
-            onClick={toggleCollapsed}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            style={{
-              width: 30, height: 30, borderRadius: 9, border: "1px solid var(--border)", background: "var(--surface-alt)",
-              color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0,
-            }}
-          >
-            <Icon name={collapsed ? "chevronRight" : "chevronLeft"} size={15} />
-          </button>
-        </div>
+        {/* Header: the logo itself is the expand/collapse toggle (Gemini-style) */}
+        <button
+          onClick={toggleCollapsed}
+          className="logo-toggle"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          style={{
+            display: "flex", alignItems: "center", gap: 10, width: "100%", minHeight: 68,
+            padding: collapsed ? "0" : "0 14px", justifyContent: collapsed ? "center" : "flex-start",
+            background: "none", border: "none", borderBottom: "1px solid var(--border)", cursor: "pointer",
+            color: "var(--text)", textAlign: "left", flexShrink: 0,
+          }}
+        >
+          <span style={{ position: "relative", width: 36, height: 36, flexShrink: 0, display: "block" }}>
+            <span className="lt-logo" style={{ display: "block" }}><Brand logoOnly /></span>
+            <span className="lt-icon" style={{
+              position: "absolute", inset: 0, borderRadius: 9, background: "var(--brand-light)", color: "var(--brand)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Icon name={collapsed ? "chevronRight" : "chevronLeft"} size={18} />
+            </span>
+          </span>
+          {!collapsed && (
+            <span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16, lineHeight: 1.15, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {student?.school_name || "School Office"}
+            </span>
+          )}
+        </button>
 
         {/* Grouped links */}
         <nav style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "6px 8px" }}>
@@ -163,34 +181,21 @@ export const AppShell = () => {
           ))}
         </nav>
 
-        {/* Footer: profile card + theme + logout */}
-        <div style={{ borderTop: "1px solid var(--border)", padding: 8, display: "flex", flexDirection: "column", gap: 6 }}>
-          <NavLink to="/profile" title={collapsed ? "My profile" : ""} style={{
-            display: "flex", alignItems: "center", gap: 10, padding: collapsed ? 6 : "8px 10px", borderRadius: 12,
-            background: "var(--surface-alt)", justifyContent: collapsed ? "center" : "flex-start", minWidth: 0,
-          }}>
-            <Avatar url={student?.photo_url} name={student?.first_name} />
-            {!collapsed && (
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {[student?.first_name, student?.last_name].filter(Boolean).join(" ") || "Student"}
-                </div>
-                <div style={{ fontSize: 11.5, color: "var(--text-muted)" }}>View profile</div>
-              </div>
-            )}
-          </NavLink>
-          <div style={{ display: "flex", gap: 6, flexDirection: collapsed ? "column" : "row" }}>
-            <div style={{ flex: 1 }}><ThemeToggle mode={mode} toggle={toggle} full={!collapsed} /></div>
-            <button
-              onClick={logout}
-              aria-label="Logout"
-              title="Logout"
-              className="btn btn-ghost"
-              style={{ width: collapsed ? "100%" : 38, height: 38, padding: 0, borderRadius: 12, color: "var(--danger)", display: "flex", alignItems: "center", justifyContent: "center" }}
-            >
-              <Icon name="logout" size={17} />
-            </button>
-          </div>
+        {/* Footer: logout only (profile + theme live in the top-bar profile menu) */}
+        <div style={{ borderTop: "1px solid var(--border)", padding: 8 }}>
+          <button
+            onClick={confirmLogout}
+            title={collapsed ? "Logout" : ""}
+            aria-label="Logout"
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 12, padding: collapsed ? "10px 0" : "10px 12px",
+              justifyContent: collapsed ? "center" : "flex-start", borderRadius: 10, background: "transparent",
+              border: "none", color: "var(--danger)", fontWeight: 600, fontSize: 14, cursor: "pointer",
+            }}
+          >
+            <Icon name="logout" size={19} color="var(--danger)" />
+            {!collapsed && <span>Logout</span>}
+          </button>
         </div>
       </aside>
 
@@ -228,8 +233,9 @@ export const AppShell = () => {
                   }}>{unread > 9 ? "9+" : unread}</span>
                 )}
               </NavLink>
-              <div className="hide-desktop"><ThemeToggle mode={mode} toggle={toggle} /></div>
-              <Avatar url={student?.photo_url} name={student?.first_name} />
+              <button onClick={() => setProfileOpen(true)} aria-label="Open profile" title="Profile" style={{ background: "none", border: "none", padding: 0, borderRadius: "50%", cursor: "pointer", display: "flex" }}>
+                <Avatar url={student?.photo_url} name={student?.first_name} />
+              </button>
             </div>
           </div>
         </header>
@@ -238,6 +244,8 @@ export const AppShell = () => {
           <Outlet />
         </main>
       </div>
+
+      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
 
       {/* Mobile bottom nav — fixed 4 + Menu, never more */}
       <nav className="hide-desktop" style={{
@@ -307,6 +315,8 @@ export const AppShell = () => {
       <style>{`
         @media (max-width: 899px) { .hide-mobile { display: none !important; } }
         @media (min-width: 900px) { .hide-desktop { display: none !important; } }
+        .logo-toggle .lt-icon { opacity: 0; transition: opacity 0.15s var(--ease); }
+        .logo-toggle:hover .lt-icon, .logo-toggle:focus-visible .lt-icon { opacity: 1; }
       `}</style>
     </div>
   );
@@ -356,18 +366,6 @@ const SideLink = ({ to, label, icon, end, collapsed, count = 0 }: { to: string; 
       }}>{count > 9 ? "9+" : count}</span>
     )}
   </NavLink>
-);
-
-const ThemeToggle = ({ mode, toggle, full = false }: { mode: string; toggle: () => void; full?: boolean }) => (
-  <button
-    onClick={toggle}
-    aria-label="Toggle theme"
-    className="btn btn-ghost"
-    style={{ width: full ? "100%" : 38, height: 38, padding: 0, borderRadius: full ? 12 : "50%" }}
-  >
-    <Icon name={mode === "dark" ? "sun" : "moon"} size={17} />
-    {full && <span style={{ marginLeft: 8, fontSize: 13 }}>{mode === "dark" ? "Light mode" : "Dark mode"}</span>}
-  </button>
 );
 
 const Avatar = ({ url, name }: { url?: string; name?: string }) => (
