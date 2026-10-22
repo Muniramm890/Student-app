@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { DialogProvider } from "./contexts/DialogContext";
 import { ToastProvider } from "./contexts/ToastContext";
+import { PdfViewerProvider } from "./components/pdf/PdfViewerProvider";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { AppShell } from "./components/layout/AppShell";
 import { Login } from "./pages/Login";
@@ -26,9 +27,11 @@ export default function App() {
       <ThemeProvider>
         <DialogProvider>
           <ToastProvider>
-            <AuthProvider>
-              <Gate />
-            </AuthProvider>
+            <PdfViewerProvider>
+              <AuthProvider>
+                <Gate />
+              </AuthProvider>
+            </PdfViewerProvider>
           </ToastProvider>
         </DialogProvider>
       </ThemeProvider>

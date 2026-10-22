@@ -2,7 +2,7 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { isNative } from "../../native";
 import { useDialog } from "../../contexts/DialogContext";
-import { isDocDownloaded, openDocument, type DocRef } from "../../utils/openDocument";
+import { isDocDownloaded, isPdfDoc, openDocument, type DocRef } from "../../utils/openDocument";
 
 export type DocState = { busy: boolean; pct: number; done: boolean };
 
@@ -21,7 +21,9 @@ export const DocLink = ({ doc, children, style, className, stopPropagation, forc
 
   const onClick = async (e: React.MouseEvent) => {
     if (stopPropagation) e.stopPropagation();
-    if (!isNative) return; // web: normal link (new tab)
+    // PDF -> in-app viewer (web + app). Other files: Android app downloads + opens in a phone app; web = normal link.
+    const pdfInViewer = isPdfDoc(doc) && (isNative || !forceDownload);
+    if (!isNative && !pdfInViewer) return;
     e.preventDefault();
     if (st.busy) return;
     setSt({ busy: true, pct: 0, done: st.done });
