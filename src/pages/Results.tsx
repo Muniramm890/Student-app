@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { StudentApi } from "../api/client";
+import { openDocument } from "../utils/openDocument";
 import { SkeletonBlock } from "../components/ui/Skeleton";
 import { Modal } from "../components/ui/Modal";
 import { useToast } from "../contexts/ToastContext";
@@ -90,7 +91,7 @@ const ReportCardModal = ({ group, onClose }: { group: ExamGroup; onClose: () => 
     setDownloading(true);
     try {
       const res: any = await StudentApi.reportCardPdf(group.id);
-      window.open(res.data.url, "_blank");
+      await openDocument({ url: res.data.url, name: `${group.name} - Report Card.pdf`, mime: "application/pdf" });
     } catch (e: any) {
       show(e.message || "Could not generate PDF", "error");
     } finally { setDownloading(false); }

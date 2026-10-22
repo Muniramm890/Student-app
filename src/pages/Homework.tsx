@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { StudentApi } from "../api/client";
 import { Icon } from "../components/ui/Icon";
+import { DocLink } from "../components/ui/DocLink";
 import { SkeletonBlock } from "../components/ui/Skeleton";
 
 type Attachment = { id: string; file_name: string; file_type: string; download_url: string };
@@ -84,13 +85,16 @@ export const Homework = () => {
               {hw.attachments.length > 0 && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {hw.attachments.map((a) => (
-                    <a key={a.id} href={a.download_url} target="_blank" rel="noreferrer" style={{
-                      display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
+                    <DocLink key={a.id} doc={{ url: a.download_url, name: a.file_name }} style={{
+                      display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", minHeight: 40,
                       background: "var(--surface-alt)", borderRadius: 10, fontSize: 12.5, fontWeight: 600,
                     }}>
-                      <Icon name="download" size={14} color="var(--brand)" />
-                      {a.file_name}
-                    </a>
+                      {({ busy, pct, done }) => (<>
+                        <Icon name={done && !busy ? "check" : "download"} size={14} color="var(--brand)" />
+                        <span style={{ flex: 1, minWidth: 0, overflowWrap: "anywhere" }}>{a.file_name}</span>
+                        {busy && <span style={{ fontSize: 11.5 }}>{pct > 0 && pct < 100 ? `${pct}%` : "…"}</span>}
+                      </>)}
+                    </DocLink>
                   ))}
                 </div>
               )}

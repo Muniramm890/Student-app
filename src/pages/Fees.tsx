@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { StudentApi } from "../api/client";
+import { openDocument } from "../utils/openDocument";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { useDialog } from "../contexts/DialogContext";
@@ -106,7 +107,7 @@ const PaymentRow = ({ payment }: { payment: FeeAccount["payments"][number] }) =>
     setLoading(true);
     try {
       const res: any = await StudentApi.receipt(payment.id);
-      window.open(res.data.receipt_url, "_blank");
+      await openDocument({ url: res.data.receipt_url, name: `Receipt ${payment.receipt_no}.pdf`, mime: "application/pdf" });
     } catch (e: any) {
       show(e.message || "Could not open receipt", "error");
     } finally { setLoading(false); }

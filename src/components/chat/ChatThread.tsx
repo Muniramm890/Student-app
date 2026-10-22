@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Icon } from "../ui/Icon";
+import { DocLink } from "../ui/DocLink";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import type { ChatMsg } from "../../hooks/useChatThread";
 import { fmtSize, prepareFile, type Prepared } from "../../utils/chatMedia";
@@ -39,15 +40,19 @@ const Media = ({ m, onOpen }: { m: ChatMsg; onOpen: (u: string) => void }) => {
     return <video src={src} controls playsInline preload="metadata" style={{ width: 260, maxWidth: "100%", borderRadius: 12, background: "#000", display: "block" }} />;
   }
   return (
-    <a href={src} target="_blank" rel="noopener noreferrer" download={m.media_name || undefined}
+    <DocLink doc={{ url: src, name: m.media_name || undefined }}
       style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", background: "rgba(0,0,0,.12)", borderRadius: 12, textDecoration: "none", color: "inherit", minWidth: 190 }}>
+      {({ busy, pct, done }) => (<>
       <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(255,255,255,.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="file" size={18} /></div>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.media_name || "Document"}</div>
+        <div style={{ fontSize: 13, fontWeight: 600, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere" }}>{m.media_name || "Document"}</div>
         <div style={{ fontSize: 11, opacity: 0.75 }}>{fmtSize(m.media_size)}</div>
       </div>
-      <Icon name="download" size={15} />
-    </a>
+      {busy
+        ? <span style={{ fontSize: 11.5, fontWeight: 700, minWidth: 30, textAlign: "right" }}>{pct > 0 && pct < 100 ? `${pct}%` : "…"}</span>
+        : <Icon name={done ? "check" : "download"} size={15} />}
+      </>)}
+    </DocLink>
   );
 };
 
@@ -149,12 +154,14 @@ export const ChatThread = ({
                   a.file_type === "image" ? (
                     <img key={a.id} src={a.file_url} alt={a.file_name} onClick={() => setViewer(a.file_url)} style={{ maxWidth: "100%", borderRadius: 10, display: "block", cursor: "zoom-in" }} />
                   ) : (
-                    <a key={a.id} href={a.file_url} target="_blank" rel="noopener noreferrer"
-                      style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, textDecoration: "none", color: "var(--text)", fontSize: 13 }}>
-                      <Icon name="file" size={14} />
-                      <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.file_name}</span>
-                      <Icon name="download" size={13} />
-                    </a>
+                    <DocLink key={a.id} doc={{ url: a.file_url, name: a.file_name }}
+                      style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, textDecoration: "none", color: "var(--text)", fontSize: 13 }}>
+                      {({ busy, pct, done }) => (<>
+                        <Icon name="file" size={14} />
+                        <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.file_name}</span>
+                        {busy ? <span style={{ fontSize: 11.5, fontWeight: 700 }}>{pct > 0 && pct < 100 ? `${pct}%` : "…"}</span> : <Icon name={done ? "check" : "download"} size={13} />}
+                      </>)}
+                    </DocLink>
                   )
                 )}
               </div>
@@ -287,8 +294,10 @@ export const ChatThread = ({
           style={{ position: "fixed", inset: 0, zIndex: 3000, background: "rgba(0,0,0,.94)", display: "flex", alignItems: "center", justifyContent: "center", padding: 12 }}>
           <img src={viewer} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
           <button className="btn btn-ghost" aria-label="Close" style={{ position: "absolute", top: "calc(12px + var(--sat))", right: 12, width: 44, height: 44, padding: 0, justifyContent: "center", color: "#fff", background: "rgba(255,255,255,.12)" }}><Icon name="close" size={18} /></button>
-          <a href={viewer} download target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-            style={{ position: "absolute", bottom: "calc(16px + var(--sab))", right: 16, color: "#fff", background: "rgba(255,255,255,.14)", borderRadius: 100, padding: "10px 16px", fontSize: 13, textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}><Icon name="download" size={15} /> Save</a>
+          <DocLink doc={{ url: viewer, name: "photo.jpg", mime: "image/jpeg" }} stopPropagation
+            style={{ position: "absolute", bottom: "calc(16px + var(--sab))", right: 16, color: "#fff", background: "rgba(255,255,255,.14)", borderRadius: 100, padding: "10px 16px", fontSize: 13, textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}>
+            {({ busy, pct }) => (<><Icon name="download" size={15} /> {busy ? (pct > 0 && pct < 100 ? `${pct}%` : "…") : "Save"}</>)}
+          </DocLink>
         </div>
       )}
     </div>
