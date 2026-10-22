@@ -10,15 +10,26 @@ import { StudentApi } from "../../api/client";
 import { registerPush } from "../../native";
 import { usePolling } from "../../hooks/usePolling";
 
-// Desktop sidebar — unconstrained, lists everything, keeps growing as modules are added.
-const NAV = [
-  { to: "/", label: "Home", icon: "home" as const, end: true },
-  { to: "/attendance", label: "Attendance", icon: "attendance" as const },
-  { to: "/homework", label: "Homework", icon: "book" as const },
-  { to: "/tests", label: "Tests", icon: "grid" as const },
-  { to: "/fees", label: "Fees", icon: "fee" as const },
-  { to: "/results", label: "Results", icon: "result" as const },
-  { to: "/profile", label: "Profile", icon: "profile" as const },
+// Desktop sidebar — grouped like the admin console. Add new modules to the right group.
+const SIDE_GROUPS = [
+  { label: "Main", items: [{ to: "/", label: "Home", icon: "home" as const, end: true }] },
+  {
+    label: "Academics",
+    items: [
+      { to: "/attendance", label: "Attendance", icon: "attendance" as const },
+      { to: "/homework", label: "Homework", icon: "book" as const },
+      { to: "/tests", label: "Tests", icon: "grid" as const },
+      { to: "/results", label: "Results", icon: "result" as const },
+    ],
+  },
+  { label: "Finance", items: [{ to: "/fees", label: "Fees", icon: "fee" as const }] },
+  {
+    label: "Account",
+    items: [
+      { to: "/notifications", label: "Notifications", icon: "bell" as const, badge: true },
+      { to: "/profile", label: "Profile", icon: "profile" as const },
+    ],
+  },
 ];
 
 // Mobile bottom nav — fixed at 4 high-frequency items + a "Menu" slot. Do not add a 5th
@@ -67,7 +78,7 @@ const SIDEBAR_KEY = "student_sidebar_collapsed";
 
 export const AppShell = () => {
   const { mode, toggle } = useTheme();
-  const { student } = useAuth();
+  const { student, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const pageTitle = location.pathname === "/" ? (student?.school_name || "Dashboard") : (PAGE_TITLES[location.pathname] || (location.pathname.startsWith("/notifications") ? "Notifications" : "School Office"));
@@ -107,31 +118,80 @@ export const AppShell = () => {
 
   return (
     <div className="app-shell">
-      {/* Desktop sidebar — collapsible to icon-only, same pattern as the admin console */}
+      {/* Desktop sidebar — expandable, grouped, same pattern as the admin console */}
       <aside className="hide-mobile" style={{
-        width: collapsed ? 76 : 248, flexShrink: 0, borderRight: "1px solid var(--border)",
-        padding: collapsed ? "28px 12px" : "28px 18px", display: "flex", flexDirection: "column", gap: 4,
+        width: collapsed ? 70 : 230, flexShrink: 0, background: "var(--bg-elevated)",
+        borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column",
         position: "sticky", top: 0, height: "100dvh", overflow: "hidden",
-        transition: "width 0.22s var(--ease), padding 0.22s var(--ease)",
+        transition: "width 0.22s var(--ease)",
       }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Brand logoOnly />
+        {/* Header: logo + school name, collapse toggle */}
+        <div style={{
+          padding: collapsed ? "16px 0" : "16px 12px 16px 14px", borderBottom: "1px solid var(--border)",
+          display: "flex", alignItems: "center", gap: 8, flexDirection: collapsed ? "column" : "row",
+          justifyContent: collapsed ? "center" : "space-between", minHeight: 68,
+        }}>
+          <div style={{ minWidth: 0, flex: collapsed ? "none" : 1 }}><Brand logoOnly={collapsed} /></div>
+          <button
+            onClick={toggleCollapsed}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            style={{
+              width: 30, height: 30, borderRadius: 9, border: "1px solid var(--border)", background: "var(--surface-alt)",
+              color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0,
+            }}
+          >
+            <Icon name={collapsed ? "chevronRight" : "chevronLeft"} size={15} />
+          </button>
         </div>
-        <div style={{ height: 28 }} />
-        {NAV.map((item) => (
-          <SideLink key={item.to} {...item} collapsed={collapsed} />
-        ))}
-        <div style={{ flex: 1 }} />
-        <button
-          onClick={toggleCollapsed}
-          className="btn btn-ghost"
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          style={{ width: "100%", justifyContent: collapsed ? "center" : "flex-start", marginBottom: 4 }}
-        >
-          <Icon name="menu" size={17} />
-          {!collapsed && <span style={{ marginLeft: 8, fontSize: 13 }}>Collapse</span>}
-        </button>
-        <ThemeToggle mode={mode} toggle={toggle} full={!collapsed} />
+
+        {/* Grouped links */}
+        <nav style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "6px 8px" }}>
+          {SIDE_GROUPS.map((g, gi) => (
+            <div key={g.label}>
+              {collapsed ? (
+                gi > 0 && <div style={{ height: 1, background: "var(--border-soft)", margin: "8px 10px" }} />
+              ) : (
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-faint)", padding: "14px 12px 6px", letterSpacing: 0.4 }}>{g.label}</div>
+              )}
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {g.items.map((item: any) => (
+                  <SideLink key={item.to} {...item} collapsed={collapsed} count={item.badge ? unread : 0} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        {/* Footer: profile card + theme + logout */}
+        <div style={{ borderTop: "1px solid var(--border)", padding: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+          <NavLink to="/profile" title={collapsed ? "My profile" : ""} style={{
+            display: "flex", alignItems: "center", gap: 10, padding: collapsed ? 6 : "8px 10px", borderRadius: 12,
+            background: "var(--surface-alt)", justifyContent: collapsed ? "center" : "flex-start", minWidth: 0,
+          }}>
+            <Avatar url={student?.photo_url} name={student?.first_name} />
+            {!collapsed && (
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 13.5, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {[student?.first_name, student?.last_name].filter(Boolean).join(" ") || "Student"}
+                </div>
+                <div style={{ fontSize: 11.5, color: "var(--text-muted)" }}>View profile</div>
+              </div>
+            )}
+          </NavLink>
+          <div style={{ display: "flex", gap: 6, flexDirection: collapsed ? "column" : "row" }}>
+            <div style={{ flex: 1 }}><ThemeToggle mode={mode} toggle={toggle} full={!collapsed} /></div>
+            <button
+              onClick={logout}
+              aria-label="Logout"
+              title="Logout"
+              className="btn btn-ghost"
+              style={{ width: collapsed ? "100%" : 38, height: 38, padding: 0, borderRadius: 12, color: "var(--danger)", display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
+              <Icon name="logout" size={17} />
+            </button>
+          </div>
+        </div>
       </aside>
 
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
@@ -277,16 +337,24 @@ const Brand = ({ compact = false, logoOnly = false }: { compact?: boolean; logoO
   );
 };
 
-const SideLink = ({ to, label, icon, end, collapsed }: { to: string; label: string; icon: any; end?: boolean; collapsed?: boolean }) => (
+const SideLink = ({ to, label, icon, end, collapsed, count = 0 }: { to: string; label: string; icon: any; end?: boolean; collapsed?: boolean; count?: number }) => (
   <NavLink to={to} end={end} title={collapsed ? label : ""} style={({ isActive }) => ({
-    display: "flex", alignItems: "center", gap: 12, padding: collapsed ? "11px" : "11px 12px",
-    justifyContent: collapsed ? "center" : "flex-start", borderRadius: 12,
-    color: isActive ? "#fff" : "var(--text-muted)",
-    background: isActive ? "var(--brand)" : "transparent",
-    fontWeight: 600, fontSize: 14, transition: "background 0.15s var(--ease)",
+    display: "flex", alignItems: "center", gap: 12, padding: collapsed ? "10px 0" : "10px 12px",
+    justifyContent: collapsed ? "center" : "flex-start", borderRadius: 10, position: "relative",
+    color: isActive ? "var(--brand)" : "var(--text-muted)",
+    background: isActive ? "var(--brand-light)" : "transparent",
+    boxShadow: isActive && !collapsed ? "inset 3px 0 0 var(--brand)" : "none",
+    fontWeight: isActive ? 700 : 600, fontSize: 14, whiteSpace: "nowrap", transition: "background 0.15s var(--ease), color 0.15s var(--ease)",
   })}>
     <Icon name={icon} size={19} />
-    {!collapsed && label}
+    {!collapsed && <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>}
+    {count > 0 && (
+      <span style={{
+        ...(collapsed ? { position: "absolute", top: 3, right: 10 } : {}),
+        minWidth: 18, height: 18, padding: "0 5px", borderRadius: 100, background: "var(--danger)", color: "#fff",
+        fontSize: 10.5, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center",
+      }}>{count > 9 ? "9+" : count}</span>
+    )}
   </NavLink>
 );
 
