@@ -126,7 +126,7 @@ const PaymentRow = ({ payment }: { payment: FeeAccount["payments"][number] }) =>
           {payment.receipt_no} · {payment.payment_method} · {new Date(payment.payment_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
         </div>
       </div>
-      <button onClick={openReceipt} disabled={loading} className="btn btn-ghost" style={{ padding: "8px 12px", fontSize: 12 }}>
+      <button onClick={openReceipt} disabled={loading} className="btn btn-ghost" style={{ padding: "8px 14px", minHeight: 38, fontSize: 12 }}>
         {loading ? "…" : "Receipt"}
       </button>
     </div>

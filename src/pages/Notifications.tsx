@@ -3,6 +3,7 @@
 // you can reply — only the sender / school office sees it (private thread). Unlimited back-and-forth.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import { StudentApi } from "../api/client";
 import { Icon } from "../components/ui/Icon";
@@ -139,7 +140,7 @@ export const Notifications = () => {
           const on = (k === "unread") === onlyUnread;
           return (
             <button key={k} onClick={() => setOnlyUnread(k === "unread")}
-              style={{ padding: "6px 14px", borderRadius: 100, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", touchAction: "manipulation",
+              style={{ padding: "8px 16px", minHeight: 36, borderRadius: 100, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", touchAction: "manipulation",
                 border: `1px solid ${on ? "var(--brand)" : "var(--border)"}`, background: on ? "var(--brand-light)" : "transparent", color: on ? "var(--brand-dark)" : "var(--text-muted)" }}>
               {l}
             </button>
@@ -211,7 +212,8 @@ export const Notifications = () => {
   return (
     <div className="enter">
       {list}
-      {messageId && (
+      {/* Portal to <body>: .enter wrapper has a transform animation, which would trap this fixed layer BELOW the bottom nav */}
+      {messageId && createPortal(
         <div
           style={{
             position: "fixed", left: 0, right: 0, zIndex: 60, background: "var(--bg)", display: "flex", flexDirection: "column",
@@ -221,7 +223,8 @@ export const Notifications = () => {
           }}>
           {/* Android app: system back button / gesture goes back, so no on-screen back button there */}
           <Conversation key={messageId} messageId={messageId} onBack={back} onOpened={onOpened} showBack={!isNative} />
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

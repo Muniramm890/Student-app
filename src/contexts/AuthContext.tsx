@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from "r
 import { unregisterPush } from "../native";
 import { StudentApi, getToken, setToken, clearToken, setUnauthorizedHandler } from "../api/client";
 import { useDialog } from "./DialogContext";
+import { SplashScreen } from "../components/ui/SplashScreen";
 
 type StudentProfile = {
   id: string; first_name: string; last_name?: string; photo_url?: string;
@@ -107,8 +108,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await refreshProfile();
   };
 
-  if (loading) return <BootSplash />;
-  if (bootFailed && !forceLoggedOut) return <BootSplash />;
+  if (loading) return <SplashScreen />;
+  if (bootFailed && !forceLoggedOut) return <SplashScreen />;
 
   return (
     <AuthContext.Provider value={{ student, loading, login, logout, refreshProfile }}>
@@ -116,26 +117,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     </AuthContext.Provider>
   );
 };
-
-const BootSplash = () => (
-  <div style={{
-    height: "100dvh", display: "flex", flexDirection: "column",
-    alignItems: "center", justifyContent: "center", gap: 16, background: "var(--bg)",
-  }}>
-    <div style={{
-      width: 56, height: 56, borderRadius: 16, background: "var(--brand)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 22, color: "#fff",
-      animation: "fadeUp 0.4s var(--ease)",
-    }}>
-      SO
-    </div>
-    <div style={{ width: 120, height: 3, borderRadius: 3, background: "var(--surface-alt)", overflow: "hidden" }}>
-      <div style={{ width: "40%", height: "100%", background: "var(--brand)", animation: "loadbar 1.1s ease-in-out infinite" }} />
-    </div>
-    <style>{`@keyframes loadbar {0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}`}</style>
-  </div>
-);
 
 export const useAuth = () => {
   const ctx = useContext(AuthContext);

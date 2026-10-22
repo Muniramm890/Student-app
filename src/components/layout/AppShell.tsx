@@ -188,24 +188,24 @@ export const AppShell = () => {
       }}>
         {MOBILE_NAV.map((item) => (
           <NavLink key={item.to} to={item.to} end={item.end} style={({ isActive }) => ({
-            display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
-            padding: "10px 12px 8px", color: isActive ? "var(--brand)" : "var(--text-faint)",
-            fontSize: 10.5, fontWeight: 600, flex: 1,
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3,
+            padding: "9px 2px 7px", color: isActive ? "var(--brand)" : "var(--text-faint)",
+            fontSize: 10.5, fontWeight: 600, flex: "1 1 0", minWidth: 0, minHeight: 54,
           })}>
             <Icon name={item.icon} size={21} />
-            {item.label}
+            <span style={{ maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
           </NavLink>
         ))}
         <button
           onClick={() => setMenuOpen(true)}
           style={{
-            display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
-            padding: "10px 12px 8px", color: "var(--text-faint)",
-            fontSize: 10.5, fontWeight: 600, flex: 1, background: "none", border: "none",
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3,
+            padding: "9px 2px 7px", color: "var(--text-faint)",
+            fontSize: 10.5, fontWeight: 600, flex: "1 1 0", minWidth: 0, minHeight: 54, background: "none", border: "none",
           }}
         >
           <Icon name="menu" size={21} />
-          Menu
+          <span>Menu</span>
         </button>
       </nav>
 

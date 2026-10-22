@@ -114,7 +114,7 @@ const AttendanceCard = ({ percent }: { percent: number | null }) => {
       <div>
         <p style={{ fontSize: 12.5, color: "var(--text-muted)" }}>Attendance</p>
         <p style={{ fontSize: 13.5, fontWeight: 600 }}>Last 30 days</p>
-        <Link to="/attendance" style={{ fontSize: 12, color: "var(--brand)", fontWeight: 600 }}>View details →</Link>
+        <Link to="/attendance" style={{ display: "inline-block", padding: "8px 0", fontSize: 12, color: "var(--brand)", fontWeight: 600 }}>View details →</Link>
       </div>
     </div>
   );
