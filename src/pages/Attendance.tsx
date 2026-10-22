@@ -4,8 +4,8 @@ import React, { useEffect, useState } from "react";
 import { StudentApi } from "../api/client";
 import { SkeletonBlock } from "../components/ui/Skeleton";
 
-type Record = { attendance_date: string; status: "P" | "A" | "L" | "OD"; remarks?: string };
-type History = { records: Record[]; counts: Record<string, number> & { P: number; A: number; L: number; OD: number }; totalMarked: number; percentage: number };
+type AttendanceRecord = { attendance_date: string; status: "P" | "A" | "L" | "OD"; remarks?: string };
+type History = { records: AttendanceRecord[]; counts: Record<string, number> & { P: number; A: number; L: number; OD: number }; totalMarked: number; percentage: number };
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   P: { label: "Present", color: "var(--success)" },
