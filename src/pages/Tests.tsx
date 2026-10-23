@@ -2,6 +2,7 @@
 //
 
 
+import { isNative } from "../native";
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { StudentApi } from "../api/client";
@@ -116,7 +117,7 @@ const useProctor = () => {
 
   const start = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 320 }, height: { ideal: 240 } } });
       streamRef.current = stream;
       if (videoElRef.current) {
         videoElRef.current.srcObject = stream;
@@ -417,7 +418,7 @@ const TestEngine = ({ testId, student, onExit, onSubmitted }: any) => {
         <div style={{ color: "var(--text-muted)", fontSize: 13.5, fontWeight: 600 }}>Preparing your exam…</div>
         <ConfirmModal
           open={showCamDenied} danger title="Camera access required"
-          message="This exam is proctored and needs your camera to begin. Please allow camera access in your browser settings, then try again."
+          message={isNative ? "This exam is proctored and needs your camera to begin. Please allow camera access for this app (Phone Settings → Apps → School Office → Permissions → Camera), then try again." : "This exam is proctored and needs your camera to begin. Please allow camera access in your browser settings, then try again."}
           confirmLabel="Try Again" cancelLabel="Exit"
           onConfirm={async () => { setShowCamDenied(false); setLoading(true); const ok = await proctor.start(); if (!ok) setShowCamDenied(true); else setLoading(false); }}
           onCancel={onExit}
