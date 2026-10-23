@@ -1,5 +1,6 @@
 // FILE: student-app/src/pages/Results.tsx
 
+import { openGeneratedPdf } from "../utils/fetchDoc";
 import React, { useEffect, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { StudentApi } from "../api/client";
@@ -90,8 +91,7 @@ const ReportCardModal = ({ group, onClose }: { group: ExamGroup; onClose: () => 
   const download = async () => {
     setDownloading(true);
     try {
-      const res: any = await StudentApi.reportCardPdf(group.id);
-      await openDocument({ url: res.data.url, name: `${group.name} - Report Card.pdf`, mime: "application/pdf" });
+      await openGeneratedPdf(`/student/results/report-card/pdf?exam_group_id=${group.id}`, { name: `${group.name} - Report Card.pdf`, title: "Report Card" });
     } catch (e: any) {
       show(e.message || "Could not generate PDF", "error");
     } finally { setDownloading(false); }

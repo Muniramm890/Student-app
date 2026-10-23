@@ -1,5 +1,6 @@
 // FILE: student-app/src/pages/Fees.tsx
 
+import { openGeneratedPdf } from "../utils/fetchDoc";
 import React, { useEffect, useState } from "react";
 import { StudentApi } from "../api/client";
 import { openDocument } from "../utils/openDocument";
@@ -106,8 +107,7 @@ const PaymentRow = ({ payment }: { payment: FeeAccount["payments"][number] }) =>
   const openReceipt = async () => {
     setLoading(true);
     try {
-      const res: any = await StudentApi.receipt(payment.id);
-      await openDocument({ url: res.data.receipt_url, name: `Receipt ${payment.receipt_no}.pdf`, mime: "application/pdf" });
+      await openGeneratedPdf(`/student/fees/me/receipt/${payment.id}`, { name: `Receipt ${payment.receipt_no}.pdf`, title: `Receipt ${payment.receipt_no}` });
     } catch (e: any) {
       show(e.message || "Could not open receipt", "error");
     } finally { setLoading(false); }

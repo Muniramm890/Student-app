@@ -307,7 +307,7 @@ export const PdfViewer = ({ doc, onClose }: { doc: DocRef; onClose: () => void }
             <div style={{ fontSize: 13.5, color: MUTED, maxWidth: 320, lineHeight: 1.5 }}>{err}</div>
             <div style={{ display: "flex", gap: 10, marginTop: 6, flexWrap: "wrap", justifyContent: "center" }}>
               <button onClick={() => setAttempt((a) => a + 1)} style={{ height: 44, padding: "0 22px", borderRadius: 12, border: "none", background: ACCENT, color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>Try again</button>
-              {!isNative && <button onClick={() => window.open(doc.url, "_blank", "noopener")} style={{ height: 44, padding: "0 18px", borderRadius: 12, border: "1px solid rgba(255,255,255,.18)", background: "transparent", color: INK, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Open in new tab</button>}
+              {!isNative && !doc.bytes && <button onClick={() => window.open(doc.url, "_blank", "noopener")} style={{ height: 44, padding: "0 18px", borderRadius: 12, border: "1px solid rgba(255,255,255,.18)", background: "transparent", color: INK, fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Open in new tab</button>}
             </div>
           </div>
         )}

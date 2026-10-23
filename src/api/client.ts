@@ -102,12 +102,10 @@ export const StudentApi = {
 
   feeAccount: () => apiRequest("/student/fees/me"),
   homework: () => apiRequest("/homework/mine"),
-  receipt: (paymentId: string) => apiRequest(`/student/fees/me/receipt/${paymentId}`),
 
   examGroups: () => apiRequest("/student/results/exam-groups"),
   reportCard: (examGroupId: string) => apiRequest(`/student/results/report-card?exam_group_id=${examGroupId}`),
   resultTrend: () => apiRequest("/student/results/trend"),
-  reportCardPdf: (examGroupId: string) => apiRequest(`/student/results/report-card/pdf?exam_group_id=${examGroupId}`),
 
   razorpayCreateOrder: (amount_paise: number) =>
     apiRequest("/student/payments/razorpay/create-order", "POST", { amount_paise }),
