@@ -10,10 +10,10 @@ import { Modal } from "../components/ui/Modal";
 import { useToast } from "../contexts/ToastContext";
 
 type ExamGroup = { id: string; name: string; exam_type: string; start_date: string };
-type TrendPoint = { exam_group_id: string; exam_name: string; percentage: number; grade: string; class_rank: number; school_rank: number };
+type TrendPoint = { exam_group_id: string; exam_name: string; percentage: number; grade: string | null; class_rank: number | null; school_rank: number | null; status?: string };
 type ReportCard = {
-  total_marks: number; max_total: number; percentage: number; grade: string; class_rank: number; school_rank: number;
-  subjects: { subject_name: string; marks_obtained: number; grade_obtained?: string; max_marks: number; is_grade_only: boolean; status: string }[];
+  total_marks: number; max_total: number; percentage: number; grade: string | null; class_rank: number | null; school_rank: number | null; status?: string;
+  subjects: { subject_name: string; marks_obtained: number | null; grade_obtained?: string | null; max_marks: number; is_grade_only: boolean; status: string }[];
 };
 
 export const Results = () => {
@@ -21,6 +21,7 @@ export const Results = () => {
   const [trend, setTrend] = useState<TrendPoint[] | null>(null);
   const [error, setError] = useState("");
   const [openGroup, setOpenGroup] = useState<ExamGroup | null>(null);
+  const chart = (trend || []).filter((t) => t.status !== "incomplete"); // incomplete results have no real percentage
 
   useEffect(() => {
     Promise.all([StudentApi.examGroups(), StudentApi.resultTrend()])
@@ -35,11 +36,11 @@ export const Results = () => {
 
       {!groups && !error && <SkeletonBlock height={220} />}
 
-      {trend && trend.length > 1 && (
+      {chart.length > 1 && (
         <div className="card" style={{ marginBottom: 18, padding: "18px 8px 8px" }}>
           <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, paddingLeft: 10 }}>Performance trend</p>
           <ResponsiveContainer width="100%" height={140}>
-            <LineChart data={trend}>
+            <LineChart data={chart}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-soft)" vertical={false} />
               <XAxis dataKey="exam_name" tick={{ fontSize: 10, fill: "var(--text-faint)" }} axisLine={false} tickLine={false} />
               <YAxis hide domain={[0, 100]} />
@@ -78,6 +79,9 @@ export const Results = () => {
   );
 };
 
+// special mark statuses shown instead of marks
+const SPECIAL: Record<string, string> = { absent: "Absent", malpractice: "Malpractice", leave: "Leave", tc: "TC", exempted: "Exempt" };
+
 const ReportCardModal = ({ group, onClose }: { group: ExamGroup; onClose: () => void }) => {
   const { show } = useToast();
   const [card, setCard] = useState<ReportCard | null>(null);
@@ -104,16 +108,23 @@ const ReportCardModal = ({ group, onClose }: { group: ExamGroup; onClose: () => 
       {card && (
         <>
           <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
-            <Stat label="Percentage" value={`${card.percentage}%`} />
-            <Stat label="Grade" value={card.grade} />
-            <Stat label="Class rank" value={`#${card.class_rank}`} />
+            <Stat label="Percentage" value={card.status === "incomplete" ? "-" : `${card.percentage}%`} />
+            <Stat label="Grade" value={card.grade || "-"} />
+            <Stat label="Class rank" value={card.class_rank ? `#${card.class_rank}` : "-"} />
+            <Stat label="School rank" value={card.school_rank ? `#${card.school_rank}` : "-"} />
           </div>
+          {card.status && (
+            <div style={{ textAlign: "center", marginBottom: 14, fontSize: 12.5, fontWeight: 700, letterSpacing: 0.6,
+              color: card.status === "pass" ? "var(--success)" : card.status === "fail" ? "var(--danger)" : "var(--text-muted)" }}>
+              RESULT: {card.status.toUpperCase()}
+            </div>
+          )}
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 18 }}>
             {card.subjects.map((s) => (
               <div key={s.subject_name} style={{ display: "flex", justifyContent: "space-between", padding: "10px 12px", background: "var(--surface-alt)", borderRadius: 10, fontSize: 13.5 }}>
                 <span>{s.subject_name}</span>
                 <span style={{ fontWeight: 600 }}>
-                  {s.is_grade_only ? s.grade_obtained : `${s.marks_obtained}/${s.max_marks}`}
+                  {SPECIAL[s.status] ? SPECIAL[s.status] : s.is_grade_only ? (s.grade_obtained || "-") : s.marks_obtained === null || s.marks_obtained === undefined ? "-" : `${s.marks_obtained}/${s.max_marks}`}
                 </span>
               </div>
             ))}
